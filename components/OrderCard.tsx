@@ -1,0 +1,232 @@
+'use client';
+
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  TruckIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  XCircleIcon,
+  CogIcon,
+  ShoppingBagIcon,
+} from '@heroicons/react/24/outline';
+
+interface OrderCardProps {
+  order: {
+    _id: string;
+    orderNumber: string;
+    items: Array<{
+      name: string;
+      image: string;
+      quantity: number;
+      price: number;
+    }>;
+    totalAmount: number;
+    orderStatus: string;
+    paymentStatus: string;
+    shippingAddress: any;
+    createdAt: string;
+    estimatedDelivery?: string;
+    trackingNumber?: string;
+    deliveredAt?: string;
+  };
+}
+
+const STEPS = [
+  { key: 'pending',    label: 'Placed',     Icon: ShoppingBagIcon },
+  { key: 'processing', label: 'Processing', Icon: CogIcon },
+  { key: 'shipped',    label: 'Shipped',    Icon: TruckIcon },
+  { key: 'delivered',  label: 'Delivered',  Icon: CheckCircleIcon },
+];
+
+const stepIndex = (status: string) => STEPS.findIndex(s => s.key === status);
+
+export default function OrderCard({ order }: OrderCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const currentStep = stepIndex(order.orderStatus);
+
+  const statusStyle = (status: string) => {
+    switch (status) {
+      case 'delivered':  return 'bg-green-900/30 text-green-400';
+      case 'processing': return 'bg-blue-900/30 text-blue-400';
+      case 'shipped':    return 'bg-purple-900/30 text-purple-400';
+      case 'cancelled':  return 'bg-red-900/30 text-red-400';
+      default:           return 'bg-yellow-900/30 text-yellow-400';
+    }
+  };
+
+  const statusIcon = (status: string) => {
+    switch (status) {
+      case 'delivered':  return <CheckCircleIcon className="h-4 w-4 text-green-400" />;
+      case 'processing': return <ClockIcon className="h-4 w-4 text-blue-400" />;
+      case 'shipped':    return <TruckIcon className="h-4 w-4 text-purple-400" />;
+      case 'cancelled':  return <XCircleIcon className="h-4 w-4 text-red-400" />;
+      default:           return <ClockIcon className="h-4 w-4 text-yellow-400" />;
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-[#111111] border border-white/10 overflow-hidden hover:border-white/20 transition-colors"
+    >
+      <div className="p-5">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="flex items-center gap-4">
+            <div>
+              <p className="text-[10px] tracking-[0.3em] uppercase text-gray-500">Order #{order.orderNumber}</p>
+              <p className="text-xs text-gray-600 mt-0.5">
+                {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </p>
+            </div>
+            <div className={`px-2.5 py-1 text-[9px] tracking-widest uppercase flex items-center gap-1.5 ${statusStyle(order.orderStatus)}`}>
+              {statusIcon(order.orderStatus)}
+              {order.orderStatus}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-[10px] tracking-widest uppercase text-gray-500">Total</p>
+              <p className="text-base font-semibold text-[#C8A96E]">₹{order.totalAmount.toLocaleString('en-IN')}</p>
+            </div>
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="p-1.5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition-colors"
+            >
+              {isExpanded
+                ? <ChevronUpIcon className="h-4 w-4" />
+                : <ChevronDownIcon className="h-4 w-4" />}
+            </button>
+          </div>
+        </div>
+
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-5 pt-5 border-t border-white/10"
+            >
+              {/* Stepper */}
+              {order.orderStatus !== 'cancelled' && (
+                <div className="mb-6">
+                  <div className="flex items-center justify-between relative">
+                    <div className="absolute top-4 left-0 right-0 h-px bg-white/10 z-0" />
+                    <div
+                      className="absolute top-4 left-0 h-px bg-[#7B2D42] z-0 transition-all duration-500"
+                      style={{ width: `${currentStep === 0 ? 0 : (currentStep / (STEPS.length - 1)) * 100}%` }}
+                    />
+                    {STEPS.map((step, i) => {
+                      const done = i <= currentStep;
+                      return (
+                        <div key={step.key} className="flex flex-col items-center z-10 gap-1.5">
+                          <div className={`h-8 w-8 flex items-center justify-center border transition-colors ${
+                            done ? 'bg-[#7B2D42] border-[#7B2D42]' : 'bg-[#1a1a1a] border-white/10'
+                          }`}>
+                            <step.Icon className={`h-4 w-4 ${done ? 'text-white' : 'text-gray-600'}`} />
+                          </div>
+                          <span className={`text-[9px] tracking-wider uppercase text-center w-16 ${done ? 'text-[#C8A96E]' : 'text-gray-600'}`}>
+                            {step.label}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {order.orderStatus === 'cancelled' && (
+                <div className="mb-4 flex items-center gap-2 bg-red-900/20 border border-red-900/30 px-4 py-3">
+                  <XCircleIcon className="h-4 w-4 text-red-400" />
+                  <span className="text-xs text-red-400 tracking-wider">This order has been cancelled</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Items */}
+                <div>
+                  <p className="text-[10px] tracking-[0.35em] uppercase text-gray-500 mb-3">Items</p>
+                  <div className="space-y-2">
+                    {order.items.map((item, i) => (
+                      <div key={i} className="flex items-center gap-3 p-3 bg-[#1a1a1a] border border-white/5">
+                        <div className="h-12 w-12 flex-shrink-0 bg-[#0a0a0a]">
+                          <img src={item.image || ''} alt={item.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-white truncate">{item.name}</p>
+                          <p className="text-[10px] text-gray-500 mt-0.5">
+                            {item.quantity} × ₹{item.price.toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                        <p className="text-xs font-medium text-[#C8A96E] flex-shrink-0">
+                          ₹{(item.quantity * item.price).toLocaleString('en-IN')}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Shipping */}
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-[10px] tracking-[0.35em] uppercase text-gray-500 mb-2">Shipping Address</p>
+                    <div className="bg-[#1a1a1a] border border-white/5 p-3 space-y-0.5">
+                      <p className="text-sm text-white">{order.shippingAddress.name}</p>
+                      <p className="text-xs text-gray-400">{order.shippingAddress.street}</p>
+                      <p className="text-xs text-gray-400">{order.shippingAddress.city}, {order.shippingAddress.state}</p>
+                      <p className="text-xs text-gray-400">{order.shippingAddress.zipCode}</p>
+                      <p className="text-xs text-gray-400">{order.shippingAddress.phone}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] tracking-[0.35em] uppercase text-gray-500 mb-2">Payment</p>
+                    <span className={`text-[10px] px-2.5 py-1 tracking-wider uppercase ${
+                      order.paymentStatus === 'paid'
+                        ? 'bg-green-900/30 text-green-400'
+                        : 'bg-yellow-900/30 text-yellow-400'
+                    }`}>
+                      {order.paymentStatus}
+                    </span>
+                  </div>
+
+                  {order.trackingNumber && (
+                    <div>
+                      <p className="text-[10px] tracking-[0.35em] uppercase text-gray-500 mb-2">Tracking</p>
+                      <p className="text-xs font-mono text-[#C8A96E] bg-[#1a1a1a] border border-white/5 px-3 py-1.5 inline-block">
+                        {order.trackingNumber}
+                      </p>
+                    </div>
+                  )}
+
+                  {order.deliveredAt && (
+                    <div>
+                      <p className="text-[10px] tracking-[0.35em] uppercase text-gray-500 mb-1">Delivered On</p>
+                      <p className="text-xs text-green-400">
+                        {new Date(order.deliveredAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </p>
+                    </div>
+                  )}
+
+                  {order.estimatedDelivery && (
+                    <div>
+                      <p className="text-[10px] tracking-[0.35em] uppercase text-gray-500 mb-1">Estimated Delivery</p>
+                      <p className="text-xs text-gray-400">
+                        {new Date(order.estimatedDelivery).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+}
