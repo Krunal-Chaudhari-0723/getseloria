@@ -151,11 +151,11 @@ export default function Navbar() {
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
       scrolled ? 'bg-black/95 backdrop-blur-sm border-b border-white/10' : 'bg-black'
     }`}>
-      <div className="max-w-7xl mx-auto px-6 lg:px-12">
-        <div className="flex items-center justify-between h-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-12">
+        <div className="flex items-center justify-between h-16 gap-2">
 
           {/* Logo */}
-          <Link href="/" className="font-serif text-xl tracking-[0.35em] text-white uppercase hover:text-luxury-gold transition-colors">
+          <Link href="/" className="font-serif text-xl tracking-[0.35em] text-white uppercase hover:text-luxury-gold transition-colors shrink-0 md:mr-8">
             Seloria
           </Link>
 
@@ -182,7 +182,7 @@ export default function Navbar() {
           </div>
 
           {/* Right */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 ml-auto">
             {/* Gifts dropdown */}
             <div className="relative" ref={giftsMenuRef}>
               <button
@@ -203,10 +203,10 @@ export default function Navbar() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-[-120px] sm:right-0 mt-3 w-[88vw] sm:w-80 bg-[#111] border border-white/10 py-3 shadow-2xl z-50"
+                    className="fixed inset-x-0 top-[4.5rem] mx-auto z-[60] w-[calc(100vw-1rem)] max-w-[22rem] bg-[#111]/95 border border-white/10 py-3 shadow-2xl rounded-xl backdrop-blur-sm md:absolute md:right-0 md:top-full md:mt-2 md:left-auto md:mx-0 md:w-80"
                   >
                     <div className="px-3 text-xs text-gray-400 mb-2">Available Gifts</div>
-                    <div className="max-h-72 overflow-y-auto">
+                    <div className="max-h-[min(18rem,calc(100vh-6rem))] overflow-y-auto">
                       {gifts.length === 0 && <div className="px-3 py-2 text-sm text-gray-400">No gifts available</div>}
                       {gifts.map((p: any) => (
                         <div key={p._id} className="flex items-center gap-3 px-3 py-2 hover:bg-white/2">
@@ -251,7 +251,7 @@ export default function Navbar() {
 
             {/* User */}
             {isLoggedIn ? (
-              <div className="relative" ref={userMenuRef}>
+              <div className="relative hidden sm:block" ref={userMenuRef}>
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center gap-2"
@@ -318,7 +318,7 @@ export default function Navbar() {
             )}
 
             {/* Mobile toggle */}
-            <button className="md:hidden p-1.5 text-gray-400 hover:text-white transition-colors"
+            <button className="md:hidden p-2 rounded-md border border-white/20 bg-white/5 text-white hover:bg-white/10 transition-colors"
               onClick={() => setIsMenuOpen(!isMenuOpen)}>
               {isMenuOpen ? <XMarkIcon className="h-5 w-5" /> : <Bars3Icon className="h-5 w-5" />}
             </button>
