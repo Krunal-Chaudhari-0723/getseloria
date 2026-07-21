@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 
 const STATUS_OPTIONS = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
@@ -38,12 +39,19 @@ export default function AdminOrdersPage() {
 
   const updateStatus = async (id: string, orderStatus: string) => {
     setUpdatingId(id);
-    await fetch(`/api/admin/orders/${id}`, {
+    const res = await fetch(`/api/admin/orders/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ orderStatus }),
     });
     setUpdatingId(null);
+    if (res.ok) {
+      if (orderStatus === 'cancelled') {
+        toast.error(`Order status updated to CANCELLED`, { position: 'top-right' });
+      } else {
+        toast.success(`Order status updated to ${orderStatus.toUpperCase()}`, { position: 'top-right' });
+      }
+    }
     fetchOrders();
   };
 
@@ -131,19 +139,44 @@ export default function AdminOrdersPage() {
                   {expandedId === order._id && (
                     <tr>
                       <td colSpan={7} className="px-6 py-4 bg-[#0d0d0d] border-b border-white/5">
-                        <div className="text-sm text-gray-300 space-y-2">
-                          <p className="text-[10px] tracking-[0.3em] uppercase text-gray-400">Items:</p>
-                          <ul className="space-y-1">
-                            {order.items?.map((item: any, i: number) => (
-                              <li key={i} className="flex justify-between text-gray-300">
-                                <span>{item.name} × {item.quantity}</span>
-                                <span className="text-[#C8A96E]">₹{(item.price * item.quantity).toLocaleString()}</span>
-                              </li>
-                            ))}
-                          </ul>
-                          <p className="text-[10px] tracking-[0.3em] uppercase text-gray-400 mt-2">Shipping:</p>
-                          <p className="text-gray-300">{order.shippingAddress?.name}, {order.shippingAddress?.street}, {order.shippingAddress?.city}, {order.shippingAddress?.state} - {order.shippingAddress?.zipCode}</p>
-                          <p className="text-gray-400">Phone: {order.shippingAddress?.phone}</p>
+                        <div className="text-sm text-gray-300 space-y-3">
+                          {order.orderStatus === 'cancelled' && (
+                            <div className="p-3 bg-red-950/30 border border-red-900/40 rounded space-y-1">
+                              <p className="text-xs font-semibold text-red-400 uppercase tracking-wider">Order Cancelled</p>
+                              {order.cancellationType && (
+                                <p className="text-xs text-gray-300">
+                                  Type: <span className="font-medium text-white">{order.cancellationType === 'full_refund' ? 'Full Refund (within 24h)' : 'Store Voucher (after 24h)'}</span>
+                                </p>
+                              )}
+                              {order.voucherCode && (
+                                <div className="mt-2 p-2.5 bg-amber-950/40 border border-amber-500/30 text-amber-200 text-xs space-y-1">
+                                  <p className="font-semibold text-amber-300">✉️ Support Team Action Required (Manual Email):</p>
+                                  <p>Customer Email: <strong className="text-white">{order.shippingAddress?.email || order.user?.email}</strong></p>
+                                  <p>Voucher Code: <strong className="font-mono text-[#C8A96E]">{order.voucherCode}</strong></p>
+                                  <p>Amount: <strong className="text-white">₹{order.totalAmount?.toLocaleString()}</strong></p>
+                                  <p>Expires On: <strong className="text-white">{order.voucherExpiresAt ? new Date(order.voucherExpiresAt).toLocaleDateString('en-IN') : '90 days from cancellation'}</strong></p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          <div>
+                            <p className="text-[10px] tracking-[0.3em] uppercase text-gray-400">Items:</p>
+                            <ul className="space-y-1 mt-1">
+                              {order.items?.map((item: any, i: number) => (
+                                <li key={i} className="flex justify-between text-gray-300 text-xs">
+                                  <span>{item.name} × {item.quantity}</span>
+                                  <span className="text-[#C8A96E]">₹{(item.price * item.quantity).toLocaleString()}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          <div>
+                            <p className="text-[10px] tracking-[0.3em] uppercase text-gray-400">Shipping:</p>
+                            <p className="text-xs text-gray-300 mt-1">{order.shippingAddress?.name}, {order.shippingAddress?.street}, {order.shippingAddress?.city}, {order.shippingAddress?.state} - {order.shippingAddress?.zipCode}</p>
+                            <p className="text-xs text-gray-400">Email: {order.shippingAddress?.email || order.user?.email} | Phone: {order.shippingAddress?.phone}</p>
+                          </div>
                         </div>
                       </td>
                     </tr>

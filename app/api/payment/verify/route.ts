@@ -58,6 +58,7 @@ export async function POST(req: NextRequest) {
     order.orderStatus = 'processing';
     order.razorpayPaymentId = razorpay_payment_id;
     order.razorpaySignature = razorpay_signature;
+    order.paidAt = new Date();
     order.createdAt = new Date();
     await order.save();
 

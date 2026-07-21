@@ -67,6 +67,19 @@ const OrderSchema = new mongoose.Schema({
   estimatedDelivery: Date,
   deliveredAt: Date,
   cancelledAt: Date,
+  paidAt: Date,
+  cancelReason: String,
+  cancellationType: {
+    type: String,
+    enum: ['full_refund', 'voucher']
+  },
+  refundStatus: {
+    type: String,
+    enum: ['pending', 'refunded', 'voucher_pending', 'voucher_issued', 'none'],
+    default: 'none'
+  },
+  voucherCode: String,
+  voucherExpiresAt: Date,
   notes: String,
   createdAt: { 
     type: Date, 

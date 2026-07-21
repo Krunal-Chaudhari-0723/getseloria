@@ -11,6 +11,9 @@ import {
   XCircleIcon,
   CogIcon,
   ShoppingBagIcon,
+  ExclamationTriangleIcon,
+  TicketIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 
 interface OrderCardProps {
@@ -28,10 +31,17 @@ interface OrderCardProps {
     paymentStatus: string;
     shippingAddress: any;
     createdAt: string;
+    paidAt?: string;
+    cancelledAt?: string;
+    cancellationType?: 'full_refund' | 'voucher';
+    refundStatus?: string;
+    voucherCode?: string;
+    voucherExpiresAt?: string;
     estimatedDelivery?: string;
     trackingNumber?: string;
     deliveredAt?: string;
   };
+  onOrderCancelled?: () => void;
 }
 
 const STEPS = [
@@ -43,9 +53,26 @@ const STEPS = [
 
 const stepIndex = (status: string) => STEPS.findIndex(s => s.key === status);
 
-export default function OrderCard({ order }: OrderCardProps) {
+export default function OrderCard({ order: initialOrder, onOrderCancelled }: OrderCardProps) {
+  const [order, setOrder] = useState(initialOrder);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const [cancelSuccessMessage, setCancelSuccessMessage] = useState<string | null>(null);
+
   const currentStep = stepIndex(order.orderStatus);
+
+  const paymentTime = order.paidAt || order.createdAt;
+  const hoursSincePayment = Math.max(0, (Date.now() - new Date(paymentTime).getTime()) / (1000 * 60 * 60));
+  const isWithin24Hours = hoursSincePayment <= 24;
+
+  const isDelivered = order.orderStatus === 'delivered';
+  const deliveryTime = order.deliveredAt;
+  const hoursSinceDelivery = isDelivered && deliveryTime
+    ? Math.max(0, (Date.now() - new Date(deliveryTime).getTime()) / (1000 * 60 * 60))
+    : 0;
+  const isDeliveryCancellationDisabled = isDelivered && (hoursSinceDelivery > 24 || !deliveryTime);
 
   const statusStyle = (status: string) => {
     switch (status) {
@@ -67,6 +94,30 @@ export default function OrderCard({ order }: OrderCardProps) {
     }
   };
 
+  const handleCancelOrder = async () => {
+    setCancelling(true);
+    setCancelError(null);
+    try {
+      const res = await fetch(`/api/orders/${order._id}/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to cancel order');
+      }
+
+      setOrder(data.order);
+      setCancelSuccessMessage(data.message);
+      setShowCancelModal(false);
+      if (onOrderCancelled) onOrderCancelled();
+    } catch (err: any) {
+      setCancelError(err.message || 'Something went wrong');
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -75,7 +126,7 @@ export default function OrderCard({ order }: OrderCardProps) {
     >
       <div className="p-5">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <div>
               <p className="text-[10px] tracking-[0.3em] uppercase text-gray-500">Order #{order.orderNumber}</p>
               <p className="text-xs text-gray-600 mt-0.5">
@@ -93,6 +144,23 @@ export default function OrderCard({ order }: OrderCardProps) {
               <p className="text-[10px] tracking-widest uppercase text-gray-500">Total</p>
               <p className="text-base font-semibold text-[#C8A96E]">₹{order.totalAmount.toLocaleString('en-IN')}</p>
             </div>
+
+            {/* Cancel Order Button */}
+            {order.orderStatus !== 'cancelled' && (
+              <button
+                onClick={() => setShowCancelModal(true)}
+                disabled={isDeliveryCancellationDisabled}
+                title={isDeliveryCancellationDisabled ? 'Cancellation period expired (24h post-delivery limit)' : 'Cancel Order'}
+                className={`px-3 py-1.5 border text-[10px] tracking-[0.2em] uppercase transition-colors ${
+                  isDeliveryCancellationDisabled
+                    ? 'bg-gray-900/40 border-gray-800 text-gray-600 cursor-not-allowed opacity-50'
+                    : 'bg-red-950/40 hover:bg-red-900/60 border-red-800/40 text-red-300'
+                }`}
+              >
+                Cancel Order
+              </button>
+            )}
+
             <button
               onClick={() => setIsExpanded(!isExpanded)}
               className="p-1.5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition-colors"
@@ -103,6 +171,16 @@ export default function OrderCard({ order }: OrderCardProps) {
             </button>
           </div>
         </div>
+
+        {/* Cancel Feedback Banner */}
+        {cancelSuccessMessage && (
+          <div className="mt-4 p-3 bg-amber-950/30 border border-amber-500/30 text-amber-300 text-xs flex justify-between items-start gap-2">
+            <span>{cancelSuccessMessage}</span>
+            <button onClick={() => setCancelSuccessMessage(null)} className="text-amber-400/60 hover:text-amber-300">
+              <XMarkIcon className="h-4 w-4" />
+            </button>
+          </div>
+        )}
 
         <AnimatePresence>
           {isExpanded && (
@@ -141,9 +219,41 @@ export default function OrderCard({ order }: OrderCardProps) {
               )}
 
               {order.orderStatus === 'cancelled' && (
-                <div className="mb-4 flex items-center gap-2 bg-red-900/20 border border-red-900/30 px-4 py-3">
-                  <XCircleIcon className="h-4 w-4 text-red-400" />
-                  <span className="text-xs text-red-400 tracking-wider">This order has been cancelled</span>
+                <div className="mb-4 bg-red-900/10 border border-red-900/30 p-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <XCircleIcon className="h-5 w-5 text-red-400" />
+                    <span className="text-sm font-semibold text-red-400 uppercase tracking-wider">This order has been cancelled</span>
+                  </div>
+                  {order.cancelledAt && (
+                    <p className="text-xs text-gray-400">
+                      Cancelled on: {new Date(order.cancelledAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  )}
+                  {order.cancellationType === 'full_refund' && (
+                    <div className="mt-2 text-xs text-green-400 flex items-center gap-1.5">
+                      <CheckCircleIcon className="h-4 w-4" />
+                      <span>Full refund of ₹{order.totalAmount.toLocaleString('en-IN')} has been initiated.</span>
+                    </div>
+                  )}
+                  {order.cancellationType === 'voucher' && (
+                    <div className="mt-2 p-3 bg-amber-950/40 border border-amber-500/30 space-y-1.5">
+                      <div className="flex items-center gap-2 text-amber-300 text-xs font-semibold">
+                        <TicketIcon className="h-4 w-4" />
+                        <span>Store Voucher Issued (Valid for 90 Days)</span>
+                      </div>
+                      <p className="text-xs text-gray-300">
+                        Voucher Code: <span className="font-mono text-[#C8A96E] font-bold">{order.voucherCode}</span>
+                      </p>
+                      {order.voucherExpiresAt && (
+                        <p className="text-[11px] text-gray-400">
+                          Expires On: {new Date(order.voucherExpiresAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                      )}
+                      <p className="text-[11px] text-amber-200/80 italic mt-1">
+                        * Our support team will manually send an email with your voucher details.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -227,6 +337,71 @@ export default function OrderCard({ order }: OrderCardProps) {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Confirmation Modal */}
+      <AnimatePresence>
+        {showCancelModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4"
+          >
+            <div className="w-full max-w-md border border-white/10 bg-[#111111] p-6 shadow-2xl relative space-y-4">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="absolute top-3 right-3 text-gray-400 hover:text-white transition-colors"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+
+              <div className="flex items-center gap-3">
+                <ExclamationTriangleIcon className="h-6 w-6 text-amber-400 flex-shrink-0" />
+                <h3 className="text-lg font-serif text-white">Cancel Order #{order.orderNumber}</h3>
+              </div>
+
+              {isWithin24Hours ? (
+                <div className="bg-green-950/30 border border-green-500/20 p-3 text-xs text-green-400 space-y-1">
+                  <p className="font-semibold">⚡ Within 24 Hours of Payment</p>
+                  <p className="text-green-300/80 leading-relaxed">
+                    You are cancelling this order within 24 hours of payment. You will receive a <strong className="text-green-300">FULL REFUND</strong> of ₹{order.totalAmount.toLocaleString('en-IN')}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-amber-950/30 border border-amber-500/30 p-3 text-xs text-amber-300 space-y-1">
+                  <p className="font-semibold">⏳ After 24 Hours of Payment</p>
+                  <p className="text-amber-200/80 leading-relaxed">
+                    Because more than 24 hours have passed since payment, you will receive a <strong className="text-amber-300">STORE VOUCHER</strong> of ₹{order.totalAmount.toLocaleString('en-IN')} valid for <strong className="text-amber-300">90 DAYS</strong>. Our support team will manually email you the voucher code.
+                  </p>
+                </div>
+              )}
+
+              {cancelError && (
+                <p className="text-xs text-red-400 bg-red-950/40 p-2 border border-red-900/40">{cancelError}</p>
+              )}
+
+              <p className="text-xs text-gray-400">Are you sure you want to proceed with cancelling this order?</p>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  onClick={() => setShowCancelModal(false)}
+                  disabled={cancelling}
+                  className="px-4 py-2 border border-white/10 text-white text-[10px] tracking-[0.2em] uppercase hover:bg-white/5 disabled:opacity-50 transition-colors"
+                >
+                  Keep Order
+                </button>
+                <button
+                  onClick={handleCancelOrder}
+                  disabled={cancelling}
+                  className="px-4 py-2 bg-red-800 hover:bg-red-700 text-white text-[10px] tracking-[0.2em] uppercase disabled:opacity-50 transition-colors"
+                >
+                  {cancelling ? 'Cancelling...' : 'Confirm Cancellation'}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

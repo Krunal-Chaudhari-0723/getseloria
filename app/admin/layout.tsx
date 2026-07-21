@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import {
   HomeIcon,
   ShoppingBagIcon,
@@ -16,6 +18,8 @@ import {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const seenOrdersRef = useRef<Map<string, string>>(new Map());
+  const isFirstRunRef = useRef(true);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -24,6 +28,64 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Poll for new order bookings and cancellations
+  useEffect(() => {
+    const pollOrders = async () => {
+      try {
+        const res = await fetch(`/api/admin/orders?limit=25&t=${Date.now()}`);
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const orders = data.orders || [];
+
+        if (isFirstRunRef.current) {
+          orders.forEach((o: any) => {
+            seenOrdersRef.current.set(o._id, o.orderStatus);
+          });
+          isFirstRunRef.current = false;
+          return;
+        }
+
+        orders.forEach((order: any) => {
+          const knownStatus = seenOrdersRef.current.get(order._id);
+
+          if (!knownStatus) {
+            // New order placed/booked
+            seenOrdersRef.current.set(order._id, order.orderStatus);
+
+            if (order.orderStatus === 'cancelled') {
+              toast.error(
+                `🚨 CANCELLED: Order #${order.orderNumber || order._id.slice(-8)} (₹${order.totalAmount?.toLocaleString('en-IN')}) was cancelled!`,
+                { position: 'top-right', autoClose: 7000 }
+              );
+            } else {
+              toast.success(
+                `🎉 NEW ORDER BOOKED: #${order.orderNumber || order._id.slice(-8)} (₹${order.totalAmount?.toLocaleString('en-IN')})`,
+                { position: 'top-right', autoClose: 7000 }
+              );
+            }
+          } else if (knownStatus !== 'cancelled' && order.orderStatus === 'cancelled') {
+            // Order was newly cancelled
+            seenOrdersRef.current.set(order._id, 'cancelled');
+            toast.error(
+              `🚨 DANGER: Order #${order.orderNumber || order._id.slice(-8)} (₹${order.totalAmount?.toLocaleString('en-IN')}) HAS BEEN CANCELLED!`,
+              { position: 'top-right', autoClose: 8000 }
+            );
+          } else {
+            // Update cached status
+            seenOrdersRef.current.set(order._id, order.orderStatus);
+          }
+        });
+      } catch (error) {
+        console.error('Error polling admin orders for notifications:', error);
+      }
+    };
+
+    pollOrders();
+    const interval = setInterval(pollOrders, 7000); // Check every 7 seconds
+    return () => clearInterval(interval);
   }, []);
 
   const navigation = [
@@ -42,6 +104,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex h-screen bg-[#0a0a0a]">
+      {/* Toast notifications on top-right of page */}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
 
       {/* Mobile toggle */}
       <button

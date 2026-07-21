@@ -89,7 +89,7 @@ function CheckoutContent() {
           setTotal(data.totalPrice || 0);
         }
       }
-    } catch {}
+    } catch { }
   };
 
   const loadUserData = async () => {
@@ -99,7 +99,7 @@ function CheckoutContent() {
         const { user } = await res.json();
         setFormData(prev => ({ ...prev, name: user.name || '', email: user.email || '', phone: user.phone || '' }));
       }
-    } catch {}
+    } catch { }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -164,7 +164,7 @@ function CheckoutContent() {
         name: 'Seloria',
         description: `Order #${orderData.orderId}`,
         order_id: orderData.razorpayOrderId,
-          handler: async (response: any) => {
+        handler: async (response: any) => {
           const verifyRes = await fetch('/api/payment/verify', {
             method: 'POST',
             credentials: 'include',
@@ -353,13 +353,12 @@ function CheckoutContent() {
                   <button
                     type="submit"
                     disabled={loading || !agreedToTerms}
-                    className={`w-full flex items-center justify-center gap-2 py-4 text-[10px] tracking-[0.3em] uppercase font-medium transition-colors ${
-                      !agreedToTerms
-                        ? 'bg-white/5 text-gray-600 cursor-not-allowed'
-                        : loading
+                    className={`w-full flex items-center justify-center gap-2 py-4 text-[10px] tracking-[0.3em] uppercase font-medium transition-colors ${!agreedToTerms
+                      ? 'bg-white/5 text-gray-600 cursor-not-allowed'
+                      : loading
                         ? 'bg-[#7B2D42] text-white opacity-70 cursor-wait'
                         : 'bg-[#7B2D42] hover:bg-[#8A3048] text-white'
-                    }`}
+                      }`}
                   >
                     <LockClosedIcon className="h-4 w-4" />
                     {loading

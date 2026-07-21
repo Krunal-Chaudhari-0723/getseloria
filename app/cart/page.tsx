@@ -305,7 +305,7 @@ function CartPageContent() {
               {cartItems.map((item, index) => {
                 const displayPrice = getDisplayPrice(item);
                 const itemTotal = (item.price) * item.quantity;
-                
+
                 return (
                   <motion.div
                     key={item._id || index}
@@ -328,7 +328,7 @@ function CartPageContent() {
                             {item.name}
                           </h3>
                         </Link>
-                        
+
                         <div className="flex items-center gap-2 mt-0.5">
                           <p className="text-sm text-gray-400">₹{displayPrice.toLocaleString()}</p>
                           {!!item.product?.discountPercent && (
