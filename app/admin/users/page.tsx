@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { MagnifyingGlassIcon, XMarkIcon, GiftIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const CARD_TYPES = ['Opal', 'Pink Quartz', 'Emerald', 'Ruby', 'Sapphire'];
+const CARD_TYPES = ['Opal', 'Sapphire', 'Emerald', 'Pink Quartz', 'Ruby'];
 
 const CARD_COLORS: Record<string, string> = {
   'Opal': 'bg-gray-500/20 text-gray-300 border-gray-500/30',
@@ -32,7 +32,8 @@ export default function AdminUsersPage() {
     const counts = CARD_TYPES.reduce((acc: Record<string, number>, type: string) => {
       const totalCards = cards.filter((c: any) => c.cardType === type).length;
       const fulfilledCount = (giftHampers || []).filter((h: any) => h.cardType === type && h.status === 'fulfilled').length;
-      acc[type] = Math.max(0, totalCards - (fulfilledCount * 10)) % 10;
+      const netCards = Math.max(0, totalCards - (fulfilledCount * 10));
+      acc[type] = netCards >= 10 ? 10 : netCards;
       return acc;
     }, {});
 
@@ -215,6 +216,8 @@ export default function AdminUsersPage() {
                 <th className="px-4 py-3 text-left text-[10px] font-medium text-gray-400 uppercase tracking-wider border-b border-white/5">Name</th>
                 <th className="px-4 py-3 text-left text-[10px] font-medium text-gray-400 uppercase tracking-wider border-b border-white/5">Email</th>
                 <th className="px-4 py-3 text-left text-[10px] font-medium text-gray-400 uppercase tracking-wider border-b border-white/5">Phone</th>
+                <th className="px-4 py-3 text-left text-[10px] font-medium text-gray-400 uppercase tracking-wider border-b border-white/5">Gender</th>
+                <th className="px-4 py-3 text-left text-[10px] font-medium text-gray-400 uppercase tracking-wider border-b border-white/5">DOB</th>
                 <th className="px-4 py-3 text-left text-[10px] font-medium text-gray-400 uppercase tracking-wider border-b border-white/5">Loyalty</th>
                 <th className="px-4 py-3 text-left text-[10px] font-medium text-gray-400 uppercase tracking-wider border-b border-white/5">Cards</th>
                 <th className="px-4 py-3 text-left text-[10px] font-medium text-gray-400 uppercase tracking-wider border-b border-white/5">Role</th>
@@ -240,6 +243,10 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-400">{user.email}</td>
                   <td className="px-4 py-3 text-sm text-gray-400">{user.phone || '—'}</td>
+                  <td className="px-4 py-3 text-sm text-gray-400">{user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : '—'}</td>
+                  <td className="px-4 py-3 text-sm text-gray-400">
+                    {user.dob ? new Date(user.dob).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-') : '—'}
+                  </td>
                   <td className="px-4 py-3">
                     {user.role === 'admin' ? (
                       <span className="text-gray-500 text-sm">—</span>

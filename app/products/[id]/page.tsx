@@ -15,6 +15,7 @@ import {
   ArrowLeftIcon,
   MinusIcon,
   PlusIcon,
+  TrashIcon,
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
 import { isWishlisted, toggleWishlist } from '@/lib/wishlist';
@@ -23,6 +24,7 @@ export default function ProductDetail() {
   const params = useParams();
   const router = useRouter();
   const [product, setProduct] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [shareMessage, setShareMessage] = useState('');
   const [quantity, setQuantity] = useState(1);
@@ -36,11 +38,14 @@ export default function ProductDetail() {
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewComment, setReviewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
+  const [reviewToDelete, setReviewToDelete] = useState<string | null>(null);
   const [reviewError, setReviewError] = useState('');
   const [reviewSuccess, setReviewSuccess] = useState(false);
 
   useEffect(() => {
     fetchProduct();
+    fetchCurrentUser();
 
     if (params.id) {
       setIsWishlist(isWishlisted(String(params.id)));
@@ -49,6 +54,18 @@ export default function ProductDetail() {
       return () => window.removeEventListener('wishlistUpdated', syncWishlist);
     }
   }, [params.id]);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const res = await fetch('/api/auth/me');
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentUser(data.user);
+      }
+    } catch {
+      // Guest user
+    }
+  };
 
   const fetchProduct = async () => {
     try {
@@ -89,6 +106,33 @@ export default function ProductDetail() {
       setReviewError('Please login to submit a review');
     } finally {
       setSubmittingReview(false);
+    }
+  };
+
+  const openDeleteReviewModal = (reviewId?: string) => {
+    setReviewToDelete(reviewId || 'user_review');
+  };
+
+  const confirmDeleteReview = async () => {
+    if (!reviewToDelete) return;
+    const targetId = reviewToDelete === 'user_review' ? '' : reviewToDelete;
+    setDeletingReviewId(reviewToDelete);
+    try {
+      const res = await fetch(`/api/products/${params.id}/reviews${targetId ? `?reviewId=${targetId}` : ''}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setReviewSuccess(false);
+        fetchProduct();
+      } else {
+        const data = await res.json();
+        setReviewError(data.error || 'Failed to delete review');
+      }
+    } catch {
+      setReviewError('Failed to delete review');
+    } finally {
+      setDeletingReviewId(null);
+      setReviewToDelete(null);
     }
   };
 
@@ -388,24 +432,47 @@ export default function ProductDetail() {
               {(!product.reviews || product.reviews.length === 0) ? (
                 <p className="text-gray-600 text-sm tracking-widest">No reviews yet. Be the first!</p>
               ) : (
-                product.reviews.map((r: any, i: number) => (
-                  <div key={i} className="border border-white/10 p-4 bg-[#111]">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-white text-sm font-medium">{r.name}</span>
-                      <span className="text-[10px] text-gray-600">
-                        {new Date(r.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                      </span>
+                product.reviews.map((r: any, i: number) => {
+                  const isOwnerOrAdmin = currentUser && (String(r.user) === String(currentUser._id) || currentUser.role === 'admin');
+                  return (
+                    <div key={r._id || i} className="border border-white/10 p-4 bg-[#111]">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-white text-sm font-medium">{r.name}</span>
+                          {isOwnerOrAdmin && (
+                            <span className="text-[9px] bg-[#7B2D42]/30 text-[#C8A96E] px-1.5 py-0.5 border border-[#7B2D42]/50 tracking-wider uppercase">
+                              Your Review
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[10px] text-gray-600">
+                            {new Date(r.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                          </span>
+                          {isOwnerOrAdmin && (
+                            <button
+                              onClick={() => openDeleteReviewModal(r._id)}
+                              disabled={deletingReviewId === (r._id || 'user_review')}
+                              className="text-gray-500 hover:text-red-400 text-xs flex items-center gap-1 transition-colors disabled:opacity-50"
+                              title="Delete review"
+                            >
+                              <TrashIcon className="h-3.5 w-3.5" />
+                              <span className="text-[10px]">Delete</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-0.5 mb-2">
+                        {[...Array(5)].map((_, j) => (
+                          j < r.rating
+                            ? <StarSolidIcon key={j} className="h-3.5 w-3.5 text-[#C8A96E]" />
+                            : <StarIcon key={j} className="h-3.5 w-3.5 text-gray-700" />
+                        ))}
+                      </div>
+                      <p className="text-gray-400 text-sm leading-relaxed">{r.comment}</p>
                     </div>
-                    <div className="flex items-center gap-0.5 mb-2">
-                      {[...Array(5)].map((_, j) => (
-                        j < r.rating
-                          ? <StarSolidIcon key={j} className="h-3.5 w-3.5 text-[#C8A96E]" />
-                          : <StarIcon key={j} className="h-3.5 w-3.5 text-gray-700" />
-                      ))}
-                    </div>
-                    <p className="text-gray-400 text-sm leading-relaxed">{r.comment}</p>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
 
@@ -470,6 +537,41 @@ export default function ProductDetail() {
           </div>
         </div>
       </div>
+
+      {/* Delete Review Modal Popup */}
+      {reviewToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
+          <div className="w-full max-w-sm border border-white/10 bg-[#111111] p-6 shadow-2xl relative text-center">
+            <div className="w-12 h-12 rounded-full bg-[#7B2D42]/20 border border-[#7B2D42]/40 flex items-center justify-center mx-auto mb-4">
+              <TrashIcon className="h-6 w-6 text-red-400" />
+            </div>
+            <p className="text-[10px] tracking-[0.4em] uppercase text-[#C8A96E] mb-2">Delete Review</p>
+            <h3 className="text-xl font-serif text-white mb-2">Are you sure?</h3>
+            <p className="text-xs text-gray-400 leading-relaxed mb-6">
+              This will permanently delete your review. You can write a new review after deleting.
+            </p>
+
+            <div className="flex gap-3 justify-center">
+              <button
+                type="button"
+                onClick={() => setReviewToDelete(null)}
+                disabled={!!deletingReviewId}
+                className="px-5 py-2.5 bg-white/5 border border-white/10 text-gray-300 text-[10px] tracking-[0.25em] uppercase hover:bg-white/10 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteReview}
+                disabled={!!deletingReviewId}
+                className="px-5 py-2.5 bg-[#7B2D42] text-white text-[10px] tracking-[0.25em] uppercase hover:bg-[#8A3048] transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {deletingReviewId ? 'Deleting...' : 'Yes, Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

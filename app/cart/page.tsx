@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
-  TrashIcon,
+  XMarkIcon,
   PlusIcon,
   MinusIcon,
   ShoppingBagIcon,
@@ -37,6 +37,7 @@ function CartPageContent() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [pendingRemoveItem, setPendingRemoveItem] = useState<{ id: string; name: string } | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [averageSpend, setAverageSpend] = useState<number | null>(null);
   const [eligibleProducts, setEligibleProducts] = useState<any[]>([]);
@@ -170,6 +171,7 @@ function CartPageContent() {
     try {
       const response = await fetch(`/api/cart/${productId}`, {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ quantity: newQuantity })
       });
@@ -187,16 +189,23 @@ function CartPageContent() {
   };
 
   const removeItem = async (productId: string) => {
-    if (!confirm('Remove this item from cart?')) return;
+    const resolvedProductId = String(productId || '').trim();
+    if (!resolvedProductId) return;
+
     try {
-      const response = await fetch(`/api/cart/${productId}`, {
-        method: 'DELETE'
+      const response = await fetch(`/api/cart/${resolvedProductId}`, {
+        method: 'DELETE',
+        credentials: 'include'
       });
 
       if (response.ok) {
         const data = await response.json();
         setCartItems(data.cart.items || []);
+        setPendingRemoveItem(null);
         window.dispatchEvent(new Event('cartUpdated'));
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Error removing item:', errorData?.error || response.statusText);
       }
     } catch (error) {
       console.error('Error removing item:', error);
@@ -233,6 +242,34 @@ function CartPageContent() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] pt-16">
+      {pendingRemoveItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-md border border-white/10 bg-[#111111] p-6 shadow-2xl">
+            <p className="text-[10px] tracking-[0.4em] uppercase text-[#C8A96E] mb-3">Remove Item</p>
+            <h3 className="text-lg font-serif text-white mb-2">Remove from cart?</h3>
+            <p className="text-sm text-gray-400 mb-6">
+              Are you sure you want to remove <span className="text-white">{pendingRemoveItem.name}</span> from your cart?
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => setPendingRemoveItem(null)}
+                className="px-4 py-2 border border-white/10 text-white text-[10px] tracking-[0.3em] uppercase hover:bg-white/5 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => removeItem(pendingRemoveItem.id)}
+                className="px-4 py-2 bg-[#7B2D42] text-white text-[10px] tracking-[0.3em] uppercase hover:bg-[#8A3048] transition-colors"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center gap-4 mb-8">
           <button
@@ -311,8 +348,16 @@ function CartPageContent() {
                     key={item._id || index}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-[#111111] border border-white/10 p-4 flex gap-4 items-start"
+                    className="bg-[#111111] border border-white/10 p-4 flex gap-4 items-start relative"
                   >
+                    <button
+                      type="button"
+                      onClick={() => setPendingRemoveItem({ id: item.product?._id || item._id, name: item.name })}
+                      aria-label={`Remove ${item.name} from cart`}
+                      className="absolute right-3 top-3 text-gray-500 hover:text-red-400 transition-colors"
+                    >
+                      <XMarkIcon className="h-5 w-5" />
+                    </button>
                     <div className="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 bg-[#1a1a1a] overflow-hidden">
                       <img
                         src={item.image || ''}
@@ -321,7 +366,7 @@ function CartPageContent() {
                       />
                     </div>
 
-                    <div className="flex-1 flex flex-col sm:flex-row justify-between gap-3 min-w-0 w-full">
+                    <div className="flex-1 flex flex-col justify-between gap-3 min-w-0 w-full">
                       <div className="flex-1 min-w-0">
                         <Link href={`/products/${item.product?._id || item._id}`}>
                           <h3 className="font-medium text-white hover:text-[#C8A96E] transition-colors text-sm truncate pr-2">
@@ -359,16 +404,11 @@ function CartPageContent() {
                               <PlusIcon className="h-3.5 w-3.5" />
                             </button>
                           </div>
-                          <button
-                            onClick={() => removeItem(item.product?._id || item._id)}
-                            className="text-gray-600 hover:text-red-400 transition-colors p-1"
-                          >
-                            <TrashIcon className="h-4.5 w-4.5" />
-                          </button>
                         </div>
                       </div>
 
-                      <div className="text-left sm:text-right flex-shrink-0 mt-1 sm:mt-0">
+                      <div className="flex items-center justify-between gap-3 pt-2 border-t border-white/5">
+                        <span className="text-xs uppercase tracking-[0.25em] text-gray-500">Item total</span>
                         <p className="font-semibold text-[#C8A96E] text-base">
                           ₹{itemTotal.toLocaleString()}
                         </p>

@@ -31,3 +31,40 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+export async function PUT(req: NextRequest) {
+  try {
+    const auth = await authMiddleware(req);
+    if (auth instanceof NextResponse) return auth;
+
+    await connectToDatabase();
+    const decoded = auth as any;
+
+    const { name, phone, gender, dob, address } = await req.json();
+
+    const updateData: any = {};
+    if (name) updateData.name = name.trim();
+    if (phone !== undefined) updateData.phone = phone.trim();
+    if (gender !== undefined) updateData.gender = gender;
+    if (dob !== undefined) updateData.dob = dob ? new Date(dob) : null;
+    if (address) {
+      updateData.address = {
+        street: address.street?.trim() || '',
+        city: address.city?.trim() || '',
+        state: address.state?.trim() || '',
+        zipCode: address.zipCode?.trim() || '',
+        country: address.country?.trim() || 'India',
+      };
+    }
+
+    const user = await User.findByIdAndUpdate(decoded.userId, updateData, { new: true }).select('-password');
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Profile updated successfully', user });
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
+  }
+}

@@ -6,6 +6,7 @@ import Product from '@/lib/models/Product';
 import ProductCard from '@/components/ProductCard';
 import FadeIn from '@/components/FadeIn';
 import NewsletterForm from '@/components/NewsletterForm';
+import HeroActions from '@/components/HeroActions';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
 
 const FLOWER_IMAGE = '/flower.png';
@@ -77,16 +78,7 @@ export default async function Home() {
                 More than a card,<br />it's a connection.
               </p>
 
-              <div className="flex flex-wrap items-center gap-6 justify-center lg:justify-start">
-                <Link href="/auth/register"
-                  className="px-8 py-3 bg-[#7B2D42] text-white text-[10px] tracking-[0.3em] uppercase hover:bg-[#8A3048] transition-colors">
-                  Join Now
-                </Link>
-                <Link href="/profile"
-                  className="flex items-center gap-2 text-white text-[10px] tracking-[0.3em] uppercase hover:text-[#C8A96E] transition-colors">
-                  Explore Benefits <ArrowRightIcon className="h-3.5 w-3.5" />
-                </Link>
-              </div>
+              <HeroActions />
             </FadeIn>
 
             {/* Right — flower image (desktop only) */}

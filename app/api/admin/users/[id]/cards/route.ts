@@ -5,7 +5,7 @@ import { adminMiddleware } from '@/lib/auth';
 import { connectToDatabase } from '@/lib/db';
 import User from '@/lib/models/User';
 
-const VALID_CARDS = ['Opal', 'Pink Quartz', 'Emerald', 'Ruby', 'Sapphire'];
+const VALID_CARDS = ['Opal', 'Sapphire', 'Emerald', 'Pink Quartz', 'Ruby'];
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {

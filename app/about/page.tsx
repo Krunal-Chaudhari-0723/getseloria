@@ -90,7 +90,7 @@ export default function AboutPage() {
             <div className="group text-center">
               <div className="relative w-full aspect-[3/4] overflow-hidden bg-[#111111] border border-white/10">
                 <Image
-                  src="/neha.jpeg"
+                  src="/Neha.jpeg"
                   alt="Neha Mishra Co-Founder, Seliora"
                   fill
                   sizes="(max-width: 640px) 100vw, 50vw"
@@ -100,7 +100,7 @@ export default function AboutPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
               <h3 className="mt-6 text-white font-serif text-xl tracking-wide">
-                Neha Mishra
+                Mishra Neha
               </h3>
               <p className="text-[#C8A96E] text-[10px] tracking-[0.3em] uppercase mt-2">
                 Founder & CEO
@@ -124,7 +124,7 @@ export default function AboutPage() {
             <div className="group text-center">
               <div className="relative w-full aspect-[3/4] overflow-hidden bg-[#111111] border border-white/10">
                 <Image
-                  src="/komal.jpeg"
+                  src="/Komal.jpeg"
                   alt="Komal Kashyap Co-Founder, Seliora"
                   fill
                   sizes="(max-width: 640px) 100vw, 50vw"

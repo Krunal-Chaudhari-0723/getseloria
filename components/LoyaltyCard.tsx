@@ -21,7 +21,7 @@ export default function LoyaltyCard({ tier, name, totalSpend, nextTier, nextMin,
     'Opal': 'bg-gray-400',
     'Pink Quartz': 'bg-pink-500',
     'Emerald': 'bg-emerald-500',
-    'Ruby': 'bg-red-500',
+    'Ruby': 'bg-red-500', 
     'Sapphire': 'bg-purple-500',
   };
   const barColor = progressBarColors[tier] ?? 'bg-amber-500';
@@ -75,51 +75,29 @@ export default function LoyaltyCard({ tier, name, totalSpend, nextTier, nextMin,
       </div>
 
       {/* Info below card */}
-      <div className="mt-5 space-y-3">
+      <div className="mt-5 space-y-3 rounded-2xl bg-white/95 p-4 border border-white/10 shadow-lg">
         <div className="flex justify-between items-center text-sm">
           <span className="text-gray-600">Total Spend</span>
-          <span className="font-semibold text-gray-800">₹{totalSpend.toLocaleString('en-IN')}</span>
+          <span className="font-semibold text-gray-900">₹{totalSpend.toLocaleString('en-IN')}</span>
         </div>
         {orderCount !== undefined && (
           <div className="flex justify-between items-center text-sm">
             <span className="text-gray-600">Orders</span>
-            <span className="font-semibold text-gray-800">{orderCount}</span>
+            <span className="font-semibold text-gray-900">{orderCount}</span>
           </div>
         )}
 
         {totalProductsPurchased !== undefined && (
           <div className="flex justify-between items-center text-sm">
             <span className="text-gray-600">Products</span>
-            <span className="font-semibold text-gray-800">{totalProductsPurchased}</span>
+            <span className="font-semibold text-gray-900">{totalProductsPurchased}</span>
           </div>
         )}
 
         {averageSpend !== undefined && (
           <div className="flex justify-between items-center text-sm">
             <span className="text-gray-600">Avg / Product</span>
-            <span className="font-semibold text-gray-800">₹{averageSpend.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
-          </div>
-        )}
-
-        {nextTier ? (
-          <>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-500">Next: <span className="font-medium text-gray-700">{nextTier}</span></span>
-              <span className="text-gray-500">₹{nextMin?.toLocaleString('en-IN')} needed</span>
-            </div>
-            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className={`h-full ${barColor} rounded-full transition-all duration-700`}
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <p className="text-xs text-gray-400 text-right">
-              ₹{Math.max(0, (nextMin ?? 0) - totalSpend).toLocaleString('en-IN')} more to reach {nextTier}
-            </p>
-          </>
-        ) : (
-          <div className="text-center py-2 bg-amber-50 rounded-lg border border-amber-200">
-            <p className="text-amber-700 font-semibold text-sm">You've reached the highest tier!</p>
+            <span className="font-semibold text-gray-900">₹{averageSpend.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
           </div>
         )}
       </div>

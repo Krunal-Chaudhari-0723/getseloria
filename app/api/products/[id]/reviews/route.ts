@@ -53,3 +53,55 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   return NextResponse.json({ message: 'Review added', rating: product.rating, numReviews: product.numReviews });
 }
+
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const auth = await authMiddleware(req);
+  if (auth instanceof NextResponse) return auth;
+
+  const { id } = params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const reviewId = searchParams.get('reviewId');
+
+  await connectToDatabase();
+  const product = await Product.findById(id);
+  if (!product) {
+    return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+  }
+
+  const userId = (auth as any).userId;
+  const userRole = (auth as any).role;
+
+  const reviewIndex = product.reviews.findIndex((r: any) => {
+    if (reviewId) {
+      return String(r._id) === reviewId && (String(r.user) === String(userId) || userRole === 'admin');
+    }
+    return String(r.user) === String(userId);
+  });
+
+  if (reviewIndex === -1) {
+    return NextResponse.json(
+      { error: 'Review not found or you are not authorized to delete this review' },
+      { status: 404 }
+    );
+  }
+
+  product.reviews.splice(reviewIndex, 1);
+
+  product.numReviews = product.reviews.length;
+  product.rating =
+    product.reviews.length > 0
+      ? product.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / product.reviews.length
+      : 0;
+
+  await product.save();
+
+  return NextResponse.json({
+    message: 'Review deleted successfully',
+    rating: product.rating,
+    numReviews: product.numReviews,
+  });
+}

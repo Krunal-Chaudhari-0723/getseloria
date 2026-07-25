@@ -1,14 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { UserCircleIcon, LockClosedIcon, PhoneIcon, DocumentTextIcon, TagIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, LockClosedIcon, PhoneIcon, DocumentTextIcon, TagIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import RichTextEditor from '@/components/RichTextEditor';
 
-const defaultTerms = `<h2><strong>1. Acceptance of Terms</strong></h2><p>By accessing and using the Seliora website, you accept and agree to be bound by these Terms and Conditions.</p><h2><strong>2. Products and Pricing</strong></h2><p>All products listed on Seliora are subject to availability. Prices are listed in Indian Rupees (INR) and are inclusive of applicable taxes unless stated otherwise.</p><h2><strong>3. Orders and Payments</strong></h2><p>Payment must be made in full at the time of order. We use Razorpay for secure payment processing.</p><h2><strong>4. Shipping and Delivery</strong></h2><p>We aim to dispatch orders within 2–5 business days. We are not responsible for delays caused by courier services.</p><h2><strong>5. Returns and Refunds</strong></h2><p>If you receive a damaged or defective item, please contact us within 48 hours of delivery. Refunds will be credited within 7–10 business days.</p><h2><strong>6. Privacy Policy</strong></h2><p>We collect personal information only as necessary to process your orders. We do not sell your personal information to third parties.</p><h2><strong>7. Changes to Terms</strong></h2><p>We reserve the right to update these Terms and Conditions at any time. Continued use of the website constitutes acceptance of the revised terms.</p>`;
+const defaultTerms = `<h2><strong>1. Acceptance of Terms</strong></h2><p>By accessing and using the Seliora website, you accept and agree to be bound by these Terms and Conditions.</p>2. Products and Pricing</h2><p>All products listed on Seliora are subject to availability. Prices are listed in Indian Rupees (INR) and are inclusive of applicable taxes unless stated otherwise.</p>3. Orders and Payments</h2><p>Payment must be made in full at the time of order. We use Razorpay for secure payment processing.</p>4. Shipping and Delivery</h2><p>We aim to dispatch orders within 2–5 business days. We are not responsible for delays caused by courier services.</p>5. Returns and Refunds</h2><p>If you receive a damaged or defective item, please contact us within 48 hours of delivery. Refunds will be credited within 7–10 business days.</p>6. Privacy Policy</h2><p>We collect personal information only as necessary to process your orders. We do not sell your personal information to third parties.</p>7. Changes to Terms</h2><p>We reserve the right to update these Terms and Conditions at any time. Continued use of the website constitutes acceptance of the revised terms.</p>`;
 
 export default function AdminSettingsPage() {
   const [profile, setProfile] = useState({ name: '', email: '' });
   const [form, setForm] = useState({ name: '', email: '', currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -172,22 +175,37 @@ export default function AdminSettingsPage() {
         <p className="text-xs text-gray-600 -mt-3">Leave blank to keep the current password</p>
         <div>
           <label className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 mb-2">New Password</label>
-          <input type="password" value={form.newPassword} onChange={e => setForm(f => ({ ...f, newPassword: e.target.value }))}
-            placeholder="Min 6 characters" className={inputClass} />
+          <div className="relative">
+            <input type={showNewPass ? 'text' : 'password'} value={form.newPassword} onChange={e => setForm(f => ({ ...f, newPassword: e.target.value }))}
+              placeholder="Min 6 characters" className={`${inputClass} pr-10`} />
+            <button type="button" onClick={() => setShowNewPass(!showNewPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+              {showNewPass ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
         <div>
           <label className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 mb-2">Confirm New Password</label>
-          <input type="password" value={form.confirmPassword} onChange={e => setForm(f => ({ ...f, confirmPassword: e.target.value }))}
-            className={inputClass} />
+          <div className="relative">
+            <input type={showConfirmPass ? 'text' : 'password'} value={form.confirmPassword} onChange={e => setForm(f => ({ ...f, confirmPassword: e.target.value }))}
+              className={`${inputClass} pr-10`} />
+            <button type="button" onClick={() => setShowConfirmPass(!showConfirmPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+              {showConfirmPass ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
         <hr className="border-white/10" />
         <div>
           <label className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 mb-2">
             Current Password <span className="text-red-400">*</span>
           </label>
-          <input type="password" required value={form.currentPassword} onChange={e => setForm(f => ({ ...f, currentPassword: e.target.value }))}
-            placeholder="Required to save any changes"
-            className={inputClass} />
+          <div className="relative">
+            <input type={showCurrentPass ? 'text' : 'password'} required value={form.currentPassword} onChange={e => setForm(f => ({ ...f, currentPassword: e.target.value }))}
+              placeholder="Required to save any changes"
+              className={`${inputClass} pr-10`} />
+            <button type="button" onClick={() => setShowCurrentPass(!showCurrentPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+              {showCurrentPass ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
         <button type="submit" disabled={saving}
           className="w-full py-2.5 bg-[#7B2D42] text-white hover:bg-[#8A3048] disabled:opacity-50 transition-colors text-[10px] tracking-[0.3em] uppercase">

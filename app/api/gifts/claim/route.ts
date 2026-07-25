@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
     if (cardType) {
       // Validate cardType range
-      const CARD_TYPES = ['Opal', 'Pink Quartz', 'Emerald', 'Ruby', 'Sapphire'];
+      const CARD_TYPES = ['Opal', 'Sapphire', 'Emerald', 'Pink Quartz', 'Ruby'];
       if (!CARD_TYPES.includes(cardType)) {
         return NextResponse.json({ error: 'Invalid card type' }, { status: 400 });
       }

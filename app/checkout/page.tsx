@@ -26,6 +26,8 @@ function CheckoutContent() {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [giftProduct, setGiftProduct] = useState<any>(null);
   const [giftLoading, setGiftLoading] = useState(!!giftProductId);
+  const [savedUserProfile, setSavedUserProfile] = useState<any>(null);
+  const [useDefaultAddress, setUseDefaultAddress] = useState(false);
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '',
     street: '', city: '', state: '', zipCode: '', country: 'India',
@@ -97,9 +99,33 @@ function CheckoutContent() {
       const res = await fetch('/api/auth/me');
       if (res.ok) {
         const { user } = await res.json();
-        setFormData(prev => ({ ...prev, name: user.name || '', email: user.email || '', phone: user.phone || '' }));
+        setSavedUserProfile(user);
+        setFormData(prev => ({
+          ...prev,
+          name: user.name || prev.name,
+          email: user.email || prev.email,
+          phone: user.phone || prev.phone,
+        }));
       }
     } catch { }
+  };
+
+  const handleToggleDefaultAddress = (checked: boolean) => {
+    setUseDefaultAddress(checked);
+    if (checked && savedUserProfile) {
+      const addr = savedUserProfile.address || {};
+      setFormData(prev => ({
+        ...prev,
+        name: savedUserProfile.name || prev.name,
+        email: savedUserProfile.email || prev.email,
+        phone: savedUserProfile.phone || prev.phone,
+        street: addr.street || prev.street,
+        city: addr.city || prev.city,
+        state: addr.state || prev.state,
+        zipCode: addr.zipCode || prev.zipCode,
+        country: addr.country || prev.country || 'India',
+      }));
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -197,6 +223,12 @@ function CheckoutContent() {
         modal: { ondismiss: () => setLoading(false) },
       };
 
+      if (typeof window.Razorpay === 'undefined') {
+        alert('Payment gateway is loading. Please wait 2 seconds and click Pay Now again.');
+        setLoading(false);
+        return;
+      }
+
       const razorpay = new window.Razorpay(options);
       razorpay.open();
     } catch (error: any) {
@@ -238,7 +270,7 @@ function CheckoutContent() {
 
   return (
     <>
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       <div className="min-h-screen bg-[#0a0a0a] pt-16">
         <div className="max-w-5xl mx-auto px-6 lg:px-12 py-12">
 
@@ -264,6 +296,23 @@ function CheckoutContent() {
                 <h2 className="text-[10px] tracking-[0.4em] uppercase text-[#C8A96E] mb-6">Shipping Details</h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* Optional Default Shipping Address Checkbox */}
+                  {savedUserProfile && (
+                    <div className="bg-[#1a1a1a] border border-white/10 p-3.5 mb-4 flex items-center justify-between">
+                      <label className="flex items-center gap-3 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={useDefaultAddress}
+                          onChange={(e) => handleToggleDefaultAddress(e.target.checked)}
+                          className="h-4 w-4 rounded border-white/20 bg-black text-[#7B2D42] focus:ring-0 accent-[#7B2D42]"
+                        />
+                        <span className="text-xs text-gray-300">Use default shipping address from My Profile</span>
+                      </label>
+                      {useDefaultAddress && (
+                        <span className="text-[9px] uppercase tracking-widest text-[#C8A96E] font-medium">Auto-filled</span>
+                      )}
+                    </div>
+                  )}
                   {/* Name */}
                   <div>
                     <label className={labelClass}>Full Name <span className="text-[#7B2D42]">*</span></label>

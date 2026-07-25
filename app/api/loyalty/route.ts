@@ -121,7 +121,7 @@ export async function GET(req: NextRequest) {
 
   // Compute card-based gifts
   const cardGifts: any[] = [];
-  const CARD_TYPES = ['Opal', 'Pink Quartz', 'Emerald', 'Ruby', 'Sapphire'];
+  const CARD_TYPES = ['Opal', 'Sapphire', 'Emerald', 'Pink Quartz', 'Ruby'];
   const CARD_GIFT_RANGES: Record<string, { min: number; max: number }> = {
     'Opal': { min: 99, max: 399 },
     'Sapphire': { min: 399, max: 999 },

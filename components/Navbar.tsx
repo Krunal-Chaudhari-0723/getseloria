@@ -14,6 +14,7 @@ import { getWishlist } from '@/lib/wishlist';
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [userName, setUserName] = useState('');
   const [userRole, setUserRole] = useState('');
   const [cartCount, setCartCount] = useState(0);
@@ -54,6 +55,7 @@ export default function Navbar() {
         setIsLoggedIn(true);
         setUserName(u.name);
         setUserRole(u.role);
+        setIsAuthLoading(false);
       } catch {}
     }
 
@@ -61,6 +63,7 @@ export default function Navbar() {
       setIsLoggedIn(true);
       setUserName(e.detail.name);
       setUserRole(e.detail.role);
+      setIsAuthLoading(false);
       updateCartCount();
       fetchGifts();
     };
@@ -86,7 +89,7 @@ export default function Navbar() {
         const data = await response.json();
         setIsLoggedIn(true);
         setUserName(data.user.name);
-        setUserRole(data.user.role);
+        setUserRole(data.user.role);  
         sessionStorage.setItem('user', JSON.stringify({ name: data.user.name, role: data.user.role, email: data.user.email }));
       } else {
         sessionStorage.removeItem('user');
@@ -94,7 +97,10 @@ export default function Navbar() {
         setUserName('');
         setUserRole('');
       }
-    } catch {}
+      setIsAuthLoading(false);
+    } catch {
+      setIsAuthLoading(false);
+    }
   };
 
   const fetchGifts = async () => {
@@ -143,7 +149,7 @@ export default function Navbar() {
     { label: 'Shop',         href: '/products' },
     { label: 'Wishlist',     href: '/wishlist' },
     { label: 'About',        href: '/about' },
-    { label: 'Loyalty Card', href: '/profile' },
+    { label: 'Loyalty Card', href: '/loyalty' },
     { label: 'Contact',      href: '/contact' },
   ];
 
@@ -250,7 +256,7 @@ export default function Navbar() {
             </Link>
 
             {/* User */}
-            {isLoggedIn ? (
+            {!isAuthLoading && isLoggedIn ? (
               <div className="relative hidden sm:block" ref={userMenuRef}>
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -280,26 +286,29 @@ export default function Navbar() {
                           Admin Panel
                         </Link>
                       )}
-                      <Link href="/orders"
-                        className="flex items-center px-4 py-2 text-[10px] tracking-widest uppercase text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
-                        onClick={() => setIsUserMenuOpen(false)}>
-                        My Orders
-                      </Link>
-                      <Link href="/wishlist"
-                        className="flex items-center px-4 py-2 text-[10px] tracking-widest uppercase text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
-                        onClick={() => setIsUserMenuOpen(false)}>
-                        Wishlist
-                      </Link>
-                      <Link href="/profile"
-                        className="flex items-center px-4 py-2 text-[10px] tracking-widest uppercase text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
-                        onClick={() => setIsUserMenuOpen(false)}>
-                        My Loyalty Card
-                      </Link>
-                      <Link href="/terms"
-                        className="flex items-center px-4 py-2 text-[10px] tracking-widest uppercase text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
-                        onClick={() => setIsUserMenuOpen(false)}>
-                        Terms
-                      </Link>
+                      {[
+                        { label: 'My Profile', href: '/profile' },
+                        { label: 'Loyalty Cards', href: '/loyalty' },
+                        { label: 'My Orders', href: '/orders' },
+                        { label: 'Wishlist', href: '/wishlist' },
+                        { label: 'Terms', href: '/terms' },
+                      ].map(link => {
+                        const isActive = pathname === link.href;
+                        return (
+                          <Link
+                            key={link.href}
+                            href={link.href}
+                            className={`flex items-center px-4 py-2 text-[10px] tracking-widest uppercase transition-colors ${
+                              isActive
+                                ? 'text-[#C8A96E] font-semibold bg-white/5'
+                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                            }`}
+                            onClick={() => setIsUserMenuOpen(false)}
+                          >
+                            {link.label}
+                          </Link>
+                        );
+                      })}
                       <div className="border-t border-white/10 mt-1 pt-1">
                         <button onClick={handleLogout}
                           className="flex items-center w-full px-4 py-2 text-[10px] tracking-widest uppercase text-[#7B2D42] hover:bg-white/5 transition-colors">
@@ -310,12 +319,12 @@ export default function Navbar() {
                   )}
                 </AnimatePresence>
               </div>
-            ) : (
+            ) : !isAuthLoading ? (
               <Link href="/auth/login"
                 className="border border-white px-4 py-1.5 text-[10px] tracking-[0.25em] uppercase text-white hover:bg-white hover:text-black transition-colors">
                 Join Now
               </Link>
-            )}
+            ) : null}
 
             {/* Mobile toggle */}
             <button className="md:hidden p-2 rounded-md border border-white/20 bg-white/5 text-white hover:bg-white/10 transition-colors"
@@ -344,28 +353,29 @@ export default function Navbar() {
                 </Link>
               ))}
               <div className="border-t border-white/10 pt-5 space-y-4">
-                {isLoggedIn ? (
+                {!isAuthLoading && isLoggedIn ? (
                   <>
+                    <Link href="/profile" className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 hover:text-white transition-colors" onClick={() => setIsMenuOpen(false)}>My Profile</Link>
                     <Link href="/orders" className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 hover:text-white transition-colors" onClick={() => setIsMenuOpen(false)}>My Orders</Link>
                     {gifts && gifts.filter((g: any) => !g.claimed).length > 0 && (
-                      <Link href="/profile" className="block text-[10px] tracking-[0.3em] uppercase text-[#C8A96E] font-semibold hover:text-white transition-colors" onClick={() => setIsMenuOpen(false)}>
+                      <Link href="/loyalty" className="block text-[10px] tracking-[0.3em] uppercase text-[#C8A96E] font-semibold hover:text-white transition-colors" onClick={() => setIsMenuOpen(false)}>
                         Claim Gift ({gifts.filter((g: any) => !g.claimed).length})
                       </Link>
                     )}
                     <Link href="/wishlist" className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 hover:text-white transition-colors" onClick={() => setIsMenuOpen(false)}>
                       Wishlist {wishlistCount > 0 ? `(${wishlistCount})` : ''}
                     </Link>
-                    <Link href="/profile" className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 hover:text-white transition-colors" onClick={() => setIsMenuOpen(false)}>My Loyalty Card</Link>
+                    <Link href="/loyalty" className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 hover:text-white transition-colors" onClick={() => setIsMenuOpen(false)}>Loyalty Cards</Link>
                     <Link href="/terms" className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 hover:text-white transition-colors" onClick={() => setIsMenuOpen(false)}>Terms</Link>
                     <button onClick={handleLogout} className="block text-[10px] tracking-[0.3em] uppercase text-[#7B2D42] hover:text-[#8A3048] transition-colors">Logout</button>
                   </>
-                ) : (
+                ) : !isAuthLoading ? (
                   <Link href="/auth/login"
                     className="inline-block border border-white px-5 py-2 text-[10px] tracking-[0.25em] uppercase text-white hover:bg-white hover:text-black transition-colors"
                     onClick={() => setIsMenuOpen(false)}>
                     Join Now
                   </Link>
-                )}
+                ) : null}
               </div>
             </div>
           </motion.div>

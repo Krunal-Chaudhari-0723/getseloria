@@ -56,10 +56,12 @@ export async function POST(req: NextRequest) {
     const orderItems: any[] = [];
 
     for (const item of cart.items) {
-      const product = await Product.findById(item.product._id);
+      if (!item.product) continue;
+      const productId = typeof item.product === 'object' && item.product._id ? item.product._id : item.product;
+      const product = await Product.findById(productId);
       if (!product) {
         return NextResponse.json(
-          { error: `Product ${item.name} not found` },
+          { error: `A product in your cart is no longer available. Please update your cart.` },
           { status: 400 }
         );
       }
