@@ -37,7 +37,13 @@ export default function LoginPage() {
         if (data.user?.role === 'admin') {
           window.location.href = '/admin/dashboard';
         } else {
-          router.push('/');
+          const searchParams = new URLSearchParams(window.location.search);
+          const redirect = searchParams.get('redirect');
+          if (redirect) {
+            router.push(redirect);
+          } else {
+            router.push('/');
+          }
         }
       } else {
         setError(data.error || 'Login failed');

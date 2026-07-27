@@ -121,7 +121,12 @@ export default function AdminOrdersPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-400">
-                      {new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-')}
+                      <div className="text-white">
+                        {new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-')}
+                      </div>
+                      <div className="text-xs text-gray-600 mt-0.5">
+                        {new Date(order.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
+                      </div>
                     </td>
                     <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                       <select

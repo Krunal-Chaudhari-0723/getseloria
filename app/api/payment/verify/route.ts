@@ -118,13 +118,15 @@ export async function POST(req: NextRequest) {
       console.error('Error computing gift unlock after payment:', err);
     }
 
-    try {
-      await Cart.findOneAndUpdate(
-        { user: order.user },
-        { items: [], totalItems: 0, totalPrice: 0 }
-      );
-    } catch (cartErr) {
-      console.error('Error clearing cart after successful payment:', cartErr);
+    if (order.notes !== 'buy_now') {
+      try {
+        await Cart.findOneAndUpdate(
+          { user: order.user },
+          { items: [], totalItems: 0, totalPrice: 0 }
+        );
+      } catch (cartErr) {
+        console.error('Error clearing cart after successful payment:', cartErr);
+      }
     }
 
     console.log('Payment verified for order', order._id.toString(), 'showGift=', showGift);

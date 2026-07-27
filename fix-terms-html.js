@@ -6,6 +6,6 @@ const htmlTerms = `<h2><strong>1. Acceptance of Terms</strong></h2><p>By accessi
 mongoose.connect('mongodb://127.0.0.1:27017/seloria').then(async () => {
   const settings = mongoose.connection.db.collection('sitesettings');
   await settings.updateOne({ type: 'main' }, { $set: { terms: htmlTerms } }, { upsert: true });
-  console.log('✅ Terms updated to HTML format');
+  console.log('Terms updated to HTML format');
   await mongoose.disconnect();
 });

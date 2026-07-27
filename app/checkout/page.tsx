@@ -19,6 +19,10 @@ function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const giftProductId = searchParams.get('gift');
+  const buyNow = searchParams.get('buyNow') === 'true';
+  const buyNowProductId = searchParams.get('productId');
+  const buyNowQuantity = Number(searchParams.get('quantity') || '1');
+
   const [loading, setLoading] = useState(false);
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
@@ -26,6 +30,8 @@ function CheckoutContent() {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [giftProduct, setGiftProduct] = useState<any>(null);
   const [giftLoading, setGiftLoading] = useState(!!giftProductId);
+  const [buyNowProduct, setBuyNowProduct] = useState<any>(null);
+  const [buyNowLoading, setBuyNowLoading] = useState(buyNow && !!buyNowProductId);
   const [savedUserProfile, setSavedUserProfile] = useState<any>(null);
   const [useDefaultAddress, setUseDefaultAddress] = useState(false);
   const [formData, setFormData] = useState({
@@ -37,10 +43,12 @@ function CheckoutContent() {
     loadUserData();
     if (giftProductId) {
       fetchGiftProduct(giftProductId);
+    } else if (buyNow && buyNowProductId) {
+      fetchBuyNowProduct(buyNowProductId);
     } else {
       fetchCart();
     }
-  }, [giftProductId]);
+  }, [giftProductId, buyNow, buyNowProductId]);
 
   const fetchGiftProduct = async (productId: string) => {
     try {
@@ -56,6 +64,24 @@ function CheckoutContent() {
       router.push('/cart');
     } finally {
       setGiftLoading(false);
+    }
+  };
+
+  const fetchBuyNowProduct = async (productId: string) => {
+    try {
+      const res = await fetch(`/api/products/${productId}`);
+      if (res.ok) {
+        const product = await res.json();
+        setBuyNowProduct(product);
+        setTotal(product.price * buyNowQuantity);
+      } else {
+        alert('This product is no longer available.');
+        router.push('/products');
+      }
+    } catch {
+      router.push('/products');
+    } finally {
+      setBuyNowLoading(false);
     }
   };
 
@@ -159,6 +185,72 @@ function CheckoutContent() {
     }
   };
 
+  const handleBuyNowSubmit = async () => {
+    setLoading(true);
+    try {
+      const orderRes = await fetch('/api/payment/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          address: formData,
+          buyNow: true,
+          productId: buyNowProductId,
+          quantity: buyNowQuantity
+        }),
+      });
+      if (!orderRes.ok) {
+        const err = await orderRes.json();
+        throw new Error(err.error || 'Failed to create order');
+      }
+      const orderData = await orderRes.json();
+
+      const options = {
+        key: orderData.razorpayKeyId,
+        amount: orderData.amount * 100,
+        currency: 'INR',
+        name: 'Seloria',
+        description: `Order #${orderData.orderId}`,
+        order_id: orderData.razorpayOrderId,
+        handler: async (response: any) => {
+          const verifyRes = await fetch('/api/payment/verify', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              order_id: orderData.orderId,
+            }),
+          });
+          const data = await verifyRes.json();
+          if (verifyRes.ok && data && data.success) {
+            window.dispatchEvent(new Event('cart-updated'));
+            router.push(`/orders?success=true&orderId=${orderData.orderId}`);
+          } else {
+            alert('Payment verification failed. Please contact support.');
+          }
+        },
+        prefill: { name: formData.name, email: formData.email, contact: formData.phone },
+        theme: { color: '#7B2D42' },
+        modal: { ondismiss: () => setLoading(false) },
+      };
+
+      if (typeof window.Razorpay === 'undefined') {
+        alert('Payment gateway is loading. Please wait 2 seconds and click Pay Now again.');
+        setLoading(false);
+        return;
+      }
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (error: any) {
+      alert(error.message || 'Payment failed. Please try again.');
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agreedToTerms) {
@@ -167,6 +259,10 @@ function CheckoutContent() {
     }
     if (giftProductId) {
       await handleClaimGiftSubmit();
+      return;
+    }
+    if (buyNow && buyNowProductId) {
+      await handleBuyNowSubmit();
       return;
     }
     setLoading(true);
@@ -240,9 +336,18 @@ function CheckoutContent() {
   const grandTotal = giftProductId ? 0 : total;
   const displayItems = giftProductId && giftProduct
     ? [{ name: giftProduct.name, image: giftProduct.images?.[0], quantity: 1, price: 0, isGift: true }]
+    : buyNow && buyNowProduct
+      ? [{
+        product: buyNowProduct,
+        name: buyNowProduct.name,
+        image: buyNowProduct.images?.[0],
+        quantity: buyNowQuantity,
+        price: buyNowProduct.price,
+        isGift: false
+      }]
     : cartItems;
 
-  if (giftLoading) {
+  if (giftLoading || buyNowLoading) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center pt-16">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#7B2D42]" />
@@ -250,7 +355,7 @@ function CheckoutContent() {
     );
   }
 
-  if (!giftProductId && cartItems.length === 0) {
+  if (!giftProductId && !buyNow && cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center pt-16">
         <div className="text-center">

@@ -21,9 +21,9 @@ mongoose.connect(uri).then(async () => {
     { $set: { password: hashed } }
   );
   if (result.matchedCount === 0) {
-    console.error(`❌ No user found with email: ${email}`);
+    console.error(` No user found with email: ${email}`);
   } else {
-    console.log(`✅ Password reset — email: ${email}  password: ${newPassword}`);
+    console.log(` Password reset — email: ${email}  password: ${newPassword}`);
   }
   await mongoose.disconnect();
 }).catch(err => {

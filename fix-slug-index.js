@@ -12,10 +12,10 @@ async function main() {
 
   try {
     await products.dropIndex('slug_1');
-    console.log('✅ Dropped slug_1 index  products can now be created normally');
+    console.log('Dropped slug_1 index  products can now be created normally');
   } catch (e) {
     if (e.code === 27) {
-      console.log('ℹ️  slug_1 index does not exist — nothing to drop');
+      console.log('slug_1 index does not exist — nothing to drop');
     } else {
       throw e;
     }

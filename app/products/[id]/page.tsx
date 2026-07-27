@@ -16,6 +16,7 @@ import {
   MinusIcon,
   PlusIcon,
   TrashIcon,
+  BoltIcon,
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
 import { isWishlisted, toggleWishlist } from '@/lib/wishlist';
@@ -31,6 +32,7 @@ export default function ProductDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [addingToCart, setAddingToCart] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [buyingNow, setBuyingNow] = useState(false);
   const [isWishlist, setIsWishlist] = useState(false);
 
   // Review state
@@ -162,6 +164,14 @@ export default function ProductDetail() {
     } finally {
       setAddingToCart(false);
     }
+  };
+
+  const buyNow = () => {
+    if (!currentUser) {
+      router.push(`/auth/login?redirect=/products/${product._id}`);
+      return;
+    }
+    router.push(`/checkout?buyNow=true&productId=${product._id}&quantity=${quantity}`);
   };
 
   const handleShare = async () => {
@@ -336,45 +346,59 @@ export default function ProductDetail() {
             )}
 
             {/* Quantity + Add to Cart */}
-            <div className="flex items-stretch gap-3">
-              {/* Qty stepper */}
-              <div className="flex items-center border border-white/10 bg-[#111]">
+            <div className="flex flex-col sm:flex-row items-stretch gap-3">
+              <div className="flex items-stretch gap-3 flex-1">
+                {/* Qty stepper */}
+                <div className="flex items-center border border-white/10 bg-[#111]">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={quantity <= 1}
+                    className="px-3 py-3 text-gray-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-30"
+                  >
+                    <MinusIcon className="h-4 w-4" />
+                  </button>
+                  <span className="px-4 text-white text-sm min-w-[3rem] text-center">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                    disabled={quantity >= product.stock}
+                    className="px-3 py-3 text-gray-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-30"
+                  >
+                    <PlusIcon className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* Add to Cart */}
                 <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  disabled={quantity <= 1}
-                  className="px-3 py-3 text-gray-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-30"
+                  onClick={addToCart}
+                  disabled={addingToCart || product.stock === 0}
+                  className={`flex-1 flex items-center justify-center gap-2 text-[10px] tracking-[0.3em] uppercase font-medium transition-colors ${product.stock === 0
+                    ? 'bg-white/5 text-gray-600 cursor-not-allowed'
+                    : addedToCart
+                      ? 'bg-green-800 text-white'
+                      : 'bg-[#7B2D42] hover:bg-[#8A3048] text-white'
+                    }`}
                 >
-                  <MinusIcon className="h-4 w-4" />
-                </button>
-                <span className="px-4 text-white text-sm min-w-[3rem] text-center">{quantity}</span>
-                <button
-                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                  disabled={quantity >= product.stock}
-                  className="px-3 py-3 text-gray-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-30"
-                >
-                  <PlusIcon className="h-4 w-4" />
+                  {addingToCart ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                  ) : addedToCart ? (
+                    <><CheckIcon className="h-4 w-4" /> Added</>
+                  ) : (
+                    <><ShoppingCartIcon className="h-4 w-4" /> Add to Cart</>
+                  )}
                 </button>
               </div>
 
-              {/* Add to Cart */}
+              {/* Buy Now */}
               <button
-                onClick={addToCart}
-                disabled={addingToCart || product.stock === 0}
-                className={`flex-1 flex items-center justify-center gap-2 text-[10px] tracking-[0.3em] uppercase font-medium transition-colors ${
+                onClick={buyNow}
+                disabled={product.stock === 0}
+                className={`flex-1 flex items-center justify-center gap-2 text-[10px] tracking-[0.3em] uppercase font-medium transition-colors py-3.5 sm:py-0 ${
                   product.stock === 0
                     ? 'bg-white/5 text-gray-600 cursor-not-allowed'
-                    : addedToCart
-                    ? 'bg-green-800 text-white'
-                    : 'bg-[#7B2D42] hover:bg-[#8A3048] text-white'
+                    : 'bg-[#C8A96E] hover:bg-[#D4BB8D] text-black font-semibold'
                 }`}
               >
-                {addingToCart ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                ) : addedToCart ? (
-                  <><CheckIcon className="h-4 w-4" /> Added</>
-                ) : (
-                  <><ShoppingCartIcon className="h-4 w-4" /> Add to Cart</>
-                )}
+                <BoltIcon className="h-4 w-4" /> Buy Now
               </button>
             </div>
 

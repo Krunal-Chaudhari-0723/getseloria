@@ -11,11 +11,11 @@ async function testEmail() {
     smtpPass = smtpPass.replace(/\s+/g, '');
   }
 
-  console.log('Testing SMTP with:');
-  console.log('Host:', smtpHost);
-  console.log('Port:', smtpPort);
-  console.log('User:', smtpUser);
-  console.log('Pass length:', smtpPass ? smtpPass.length : 0);
+  // console.log('Testing SMTP with:');
+  // console.log('Host:', smtpHost);
+  // console.log('Port:', smtpPort);
+  // console.log('User:', smtpUser);
+  // console.log('Pass length:', smtpPass ? smtpPass.length : 0);
 
   if (!smtpUser || !smtpPass) {
     console.error('ERROR: SMTP_USER or SMTP_PASS is missing in .env.local');
@@ -35,9 +35,9 @@ async function testEmail() {
   try {
     console.log('Verifying SMTP connection...');
     await transporter.verify();
-    console.log('✅ SUCCESS! SMTP credentials are valid and working.');
+    console.log('SUCCESS! SMTP credentials are valid and working.');
   } catch (error) {
-    console.error('❌ FAILED:', error.message);
+    console.error('FAILED:', error.message);
   }
 }
 

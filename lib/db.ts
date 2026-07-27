@@ -23,7 +23,7 @@ async function seedAdmin() {
     if (existing) return; // skip bcrypt if admin already exists
     const hashed = await bcrypt.hash('02230223', 10);
     await User.create({ name: 'Admin', email: 'admin@gmail.com', password: hashed, role: 'admin' });
-    console.log('✅ Admin seeded email: admin@gmail.com  password: 02230223');
+    console.log('Admin seeded email: admin@gmail.com  password: 02230223');
   } catch (err) {
     console.error('Admin seed failed:', err);
   }

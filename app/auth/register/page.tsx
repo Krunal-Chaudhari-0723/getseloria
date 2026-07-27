@@ -28,13 +28,82 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+
+    // Name validation
+    if (!formData.name.trim()) {
+      errors.name = 'Full name is required';
+    } else if (formData.name.trim().length < 3) {
+      errors.name = 'Name must be at least 3 characters long';
+    } else if (!/^[A-Za-z\s]+$/.test(formData.name.trim())) {
+      errors.name = 'Name must only contain letters and spaces';
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim()) {
+      errors.email = 'Email address is required';
+    } else if (!emailRegex.test(formData.email.trim())) {
+      errors.email = 'Please enter a valid email address';
+    }
+
+    // Phone validation
+    const phoneRegex = /^\+?[0-9\s-]{10,15}$/;
+    if (!formData.phone.trim()) {
+      errors.phone = 'Phone number is required';
+    } else if (!phoneRegex.test(formData.phone.trim().replace(/\s+/g, ''))) {
+      errors.phone = 'Please enter a valid 10 to 12 digit phone number';
+    }
+
+    // Gender validation
+    if (!formData.gender) {
+      errors.gender = 'Please select a gender';
+    }
+
+    // DOB validation
+    if (!formData.dob) {
+      errors.dob = 'Date of birth is required';
+    } else {
+      const dobDate = new Date(formData.dob);
+      const today = new Date();
+      if (isNaN(dobDate.getTime())) {
+        errors.dob = 'Please enter a valid date of birth';
+      } else if (dobDate >= today) {
+        errors.dob = 'Date of birth must be in the past';
+      } else {
+        const age = today.getFullYear() - dobDate.getFullYear();
+        const m = today.getMonth() - dobDate.getMonth();
+        if (age < 13 || (age === 13 && m < 0) || (age === 13 && m === 0 && today.getDate() < dobDate.getDate())) {
+          errors.dob = 'You must be at least 13 years old to register';
+        }
+      }
+    }
+
+    // Password validation
+    if (!formData.password) {
+      errors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      errors.password = 'Password must be at least 6 characters';
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
     setSuccess('');
+    setFieldErrors({});
 
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
@@ -86,7 +155,8 @@ export default function RegisterPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          {/* Full Name */}
           <div>
             <label className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 mb-2">
               Full Name
@@ -95,15 +165,20 @@ export default function RegisterPage() {
               <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-600" />
               <input
                 type="text"
-                required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="bg-[#1a1a1a] border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#C8A96E] px-4 py-2.5 text-sm w-full pl-10"
+                className={`bg-[#1a1a1a] border text-white placeholder-gray-600 focus:outline-none px-4 py-2.5 text-sm w-full pl-10 ${
+                  fieldErrors.name ? 'border-red-500 focus:border-red-500' : 'border-white/10 focus:border-[#C8A96E]'
+                }`}
                 placeholder="John Doe"
               />
             </div>
+            {fieldErrors.name && (
+              <p className="text-red-400 text-[11px] mt-1 tracking-wide">{fieldErrors.name}</p>
+            )}
           </div>
 
+          {/* Email Address */}
           <div>
             <label className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 mb-2">
               Email Address
@@ -112,15 +187,20 @@ export default function RegisterPage() {
               <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-600" />
               <input
                 type="email"
-                required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="bg-[#1a1a1a] border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#C8A96E] px-4 py-2.5 text-sm w-full pl-10"
+                className={`bg-[#1a1a1a] border text-white placeholder-gray-600 focus:outline-none px-4 py-2.5 text-sm w-full pl-10 ${
+                  fieldErrors.email ? 'border-red-500 focus:border-red-500' : 'border-white/10 focus:border-[#C8A96E]'
+                }`}
                 placeholder="you@example.com"
               />
             </div>
+            {fieldErrors.email && (
+              <p className="text-red-400 text-[11px] mt-1 tracking-wide">{fieldErrors.email}</p>
+            )}
           </div>
 
+          {/* Phone Number */}
           <div>
             <label className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 mb-2">
               Phone Number <span className="text-[#7B2D42]">*</span>
@@ -129,32 +209,42 @@ export default function RegisterPage() {
               <PhoneIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-600" />
               <input
                 type="tel"
-                required
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="bg-[#1a1a1a] border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#C8A96E] px-4 py-2.5 text-sm w-full pl-10"
+                className={`bg-[#1a1a1a] border text-white placeholder-gray-600 focus:outline-none px-4 py-2.5 text-sm w-full pl-10 ${
+                  fieldErrors.phone ? 'border-red-500 focus:border-red-500' : 'border-white/10 focus:border-[#C8A96E]'
+                }`}
                 placeholder="+91 98765 43210"
               />
             </div>
+            {fieldErrors.phone && (
+              <p className="text-red-400 text-[11px] mt-1 tracking-wide">{fieldErrors.phone}</p>
+            )}
           </div>
 
+          {/* Gender */}
           <div>
             <label className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 mb-2">
               Gender
             </label>
             <select
-              required
               value={formData.gender}
               onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-              className="bg-[#1a1a1a] border border-white/10 text-white focus:outline-none focus:border-[#C8A96E] px-4 py-2.5 text-sm w-full"
+              className={`bg-[#1a1a1a] border text-white focus:outline-none px-4 py-2.5 text-sm w-full ${
+                fieldErrors.gender ? 'border-red-500 focus:border-red-500' : 'border-white/10 focus:border-[#C8A96E]'
+              }`}
             >
               <option value="" disabled>Select gender</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
               <option value="other">Other</option>
             </select>
+            {fieldErrors.gender && (
+              <p className="text-red-400 text-[11px] mt-1 tracking-wide">{fieldErrors.gender}</p>
+            )}
           </div>
 
+          {/* Date of Birth */}
           <div>
             <label className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 mb-2">
               Date of Birth
@@ -163,14 +253,19 @@ export default function RegisterPage() {
               <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-600" />
               <input
                 type="date"
-                required
                 value={formData.dob}
                 onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                className="bg-[#1a1a1a] border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#C8A96E] px-4 py-2.5 text-sm w-full pl-10"
+                className={`bg-[#1a1a1a] border text-white placeholder-gray-600 focus:outline-none px-4 py-2.5 text-sm w-full pl-10 ${
+                  fieldErrors.dob ? 'border-red-500 focus:border-red-500' : 'border-white/10 focus:border-[#C8A96E]'
+                }`}
               />
             </div>
+            {fieldErrors.dob && (
+              <p className="text-red-400 text-[11px] mt-1 tracking-wide">{fieldErrors.dob}</p>
+            )}
           </div>
 
+          {/* Password */}
           <div>
             <label className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 mb-2">
               Password
@@ -179,11 +274,11 @@ export default function RegisterPage() {
               <LockClosedIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-600" />
               <input
                 type={showPassword ? 'text' : 'password'}
-                required
-                minLength={6}
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="bg-[#1a1a1a] border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#C8A96E] px-4 py-2.5 text-sm w-full pl-10 pr-10"
+                className={`bg-[#1a1a1a] border text-white placeholder-gray-600 focus:outline-none px-4 py-2.5 text-sm w-full pl-10 pr-10 ${
+                  fieldErrors.password ? 'border-red-500 focus:border-red-500' : 'border-white/10 focus:border-[#C8A96E]'
+                }`}
                 placeholder="••••••••"
               />
               <button
@@ -199,7 +294,11 @@ export default function RegisterPage() {
                 )}
               </button>
             </div>
-            <p className="text-xs text-gray-600 mt-1">Must be at least 6 characters</p>
+            {fieldErrors.password ? (
+              <p className="text-red-400 text-[11px] mt-1 tracking-wide">{fieldErrors.password}</p>
+            ) : (
+              <p className="text-xs text-gray-600 mt-1">Must be at least 6 characters</p>
+            )}
           </div>
 
           <button

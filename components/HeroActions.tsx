@@ -23,7 +23,7 @@ export default function HeroActions() {
   return (
     <div className="flex flex-wrap items-center gap-6 justify-center lg:justify-start">
       {!isAuthLoading && !isLoggedIn && (
-        <Link href="/auth/register"
+        <Link href="/auth/login"
           className="px-8 py-3 bg-[#7B2D42] text-white text-[10px] tracking-[0.3em] uppercase hover:bg-[#8A3048] transition-colors">
           Join Now
         </Link>

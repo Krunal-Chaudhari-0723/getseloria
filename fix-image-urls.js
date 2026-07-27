@@ -12,5 +12,5 @@ mongoose.connect('mongodb://127.0.0.1:27017/seloria').then(async () => {
     console.log('Updated:', p.name, '->', newImages);
   }
   await mongoose.disconnect();
-  console.log('✅ All image URLs updated');
+  console.log('All image URLs updated');
 });

@@ -26,7 +26,7 @@ async function main() {
   const admin = await users.findOne({ email: 'admin@gmail.com' });
   const ok = await bcrypt.compare('02230223', admin.password);
 
-  console.log('✅ Admin created');
+  console.log('   Admin created');
   console.log('   Email:', admin.email);
   console.log('   Role:', admin.role);
   console.log('   Password verified:', ok);
