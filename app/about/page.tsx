@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import AnimatedCounter from "@/components/AnimatedCounter";
+
 
 export default function AboutPage() {
   return (
@@ -239,13 +241,15 @@ export default function AboutPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
             {[
-              { number: "50+", label: "Products" },
-              { number: "100+", label: "Happy Customers" },
-              { number: "5★", label: "Average Rating" },
-              { number: "100%", label: "Authentic Jewelry" },
+              { value: 50, suffix: "+", label: "Products" },
+              { value: 100, suffix: "+", label: "Happy Customers" },
+              { value: 5, suffix: "★", label: "Average Rating" },
+              { value: 100, suffix: "%", label: "Authentic Jewelry" },
             ].map((s) => (
               <div key={s.label}>
-                <p className="text-4xl font-bold text-[#C8A96E]">{s.number}</p>
+                <p className="text-4xl font-bold text-[#C8A96E]">
+                  <AnimatedCounter value={s.value} suffix={s.suffix} />
+                </p>
                 <p className="text-white/70 mt-1 text-[10px] tracking-[0.3em] uppercase">
                   {s.label}
                 </p>
