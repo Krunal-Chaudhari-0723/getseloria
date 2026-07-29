@@ -258,7 +258,7 @@ export default function LoyaltyPage() {
         <div className="max-w-4xl mx-auto px-4 space-y-8">
           {/* Main Loyalty Card */}
           {loyalty && (
-            <div className="relative">
+            <div className="relative" id="my-card">
               <p className="text-[10px] tracking-[0.4em] uppercase text-[#C8A96E] mb-4">Your Membership Card</p>
 
               <div className="absolute top-0 right-0 transform translate-y-2 translate-x-2 z-30">
@@ -277,6 +277,26 @@ export default function LoyaltyPage() {
               />
             </div>
           )}
+
+          {/* How It Works Section */}
+          <div id="how-it-works" className="bg-[#111111] border border-white/10 p-6 rounded-lg">
+            <p className="text-[10px] tracking-[0.4em] uppercase text-[#C8A96E] mb-2">Guide</p>
+            <h2 className="text-xl font-serif text-white mb-4">How It Works</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-400">
+              <div>
+                <span className="text-[#C8A96E] font-serif text-lg block mb-1">1. Shop & Earn</span>
+                <p className="text-xs leading-relaxed">Every item you purchase earns you a loyalty card matching the price tier of that product.</p>
+              </div>
+              <div>
+                <span className="text-[#C8A96E] font-serif text-lg block mb-1">2. Collect Cards</span>
+                <p className="text-xs leading-relaxed">Collect 10 cards of the same tier. You can view your card collection progress in the sections below.</p>
+              </div>
+              <div>
+                <span className="text-[#C8A96E] font-serif text-lg block mb-1">3. Redeem Gift</span>
+                <p className="text-xs leading-relaxed">Once you reach 10/10 cards for a tier, you can choose and claim a free gift hamper from that tier range.</p>
+              </div>
+            </div>
+          </div>
 
           {/* Card-Based Loyalty Gifts Section */}
           {loyalty?.cardGifts && loyalty.cardGifts.length > 0 && (
@@ -318,7 +338,7 @@ export default function LoyaltyPage() {
           )}
 
           {/* Collected Cards Section */}
-          <div>
+          <div id="tiers-benefits">
             <h2 className="text-xl font-serif text-white mb-6">Your Collected Loyalty Cards</h2>
 
             {earnedGiftTypes.length > 0 && (

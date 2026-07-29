@@ -158,7 +158,7 @@ export default function Navbar() {
       scrolled ? 'bg-black/95 backdrop-blur-sm border-b border-white/10' : 'bg-black'
     }`}>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-12">
-        <div className="flex items-center justify-between h-16 gap-2">
+        <div className="flex items-center justify-between h-16 gap-2 relative">
 
           {/* Logo */}
           <Link href="/" className="font-serif text-xl tracking-[0.35em] text-white uppercase hover:text-luxury-gold transition-colors shrink-0 md:mr-8">
@@ -166,7 +166,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8">
             {navLinks.map(link => (
               <Link
                 key={link.href}

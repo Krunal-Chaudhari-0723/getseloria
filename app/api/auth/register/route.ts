@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { connectToDatabase } from '@/lib/db';
 import User from '@/lib/models/User';
+import { generateToken } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
   try {
@@ -64,13 +65,28 @@ export async function POST(req: NextRequest) {
       dob: user.dob
     };
 
-    return NextResponse.json(
+    const token = generateToken(user._id.toString(), user.email, user.role);
+
+    const response = NextResponse.json(
       { 
-        message: 'Registration successful! Please login.',
+        message: 'Registration successful!',
         user: userResponse 
       },
       { status: 201 }
     );
+
+    const protocol = req.headers.get('x-forwarded-proto') || (req.nextUrl.protocol === 'https:' ? 'https' : 'http');
+    const isSecure = protocol === 'https';
+
+    response.cookies.set('token', token, {
+      httpOnly: true,
+      secure: isSecure,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+    });
+
+    return response;
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json(

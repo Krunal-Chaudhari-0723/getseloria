@@ -114,9 +114,17 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccess('Registration successful! Please login.');
+        sessionStorage.setItem('user', JSON.stringify({ name: data.user.name, role: data.user.role, email: data.user.email }));
+        window.dispatchEvent(new CustomEvent('authChanged', { detail: data.user }));
+        setSuccess('Registration successful! Logging you in...');
         setTimeout(() => {
-          router.push('/auth/login');
+          const searchParams = new URLSearchParams(window.location.search);
+          const redirect = searchParams.get('redirect');
+          if (redirect) {
+            router.push(redirect);
+          } else {
+            router.push('/');
+          }
         }, 2000);
       } else {
         setError(data.error || 'Registration failed');

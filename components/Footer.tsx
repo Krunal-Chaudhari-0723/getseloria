@@ -61,9 +61,9 @@ export default function Footer() {
             <h4 className="text-[10px] tracking-[0.35em] uppercase text-white mb-5">Loyalty Card</h4>
             <ul className="space-y-3">
               {[
-                { label: 'How It Works', href: '/profile' },
-                { label: 'Tiers & Benefits', href: '/profile' },
-                { label: 'My Card', href: '/profile' },
+                { label: 'How It Works', href: '/loyalty' },
+                { label: 'Tiers & Benefits', href: '/loyalty' },
+                { label: 'My Card', href: '/loyalty' },
               ].map(l => (
                 <li key={l.label}>
                   <Link href={l.href} className="text-xs text-gray-500 hover:text-[#C8A96E] transition-colors tracking-wide">
