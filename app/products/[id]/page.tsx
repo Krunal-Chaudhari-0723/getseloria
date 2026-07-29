@@ -12,6 +12,7 @@ import {
   CheckIcon,
   TruckIcon,
   ShieldCheckIcon,
+
   ArrowLeftIcon,
   MinusIcon,
   PlusIcon,
@@ -287,11 +288,11 @@ export default function ProductDetail() {
                   ))}
                   <span className="ml-2 text-xs text-gray-500">({product.numReviews || 0} reviews)</span>
                 </div>
-                <span className={`text-[10px] tracking-widest uppercase px-2 py-0.5 ${
+                {/* <span className={`text-[10px] tracking-widest uppercase px-2 py-0.5 ${
                   product.stock > 0 ? 'text-green-400 bg-green-900/20' : 'text-red-400 bg-red-900/20'
                 }`}>
                   {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
-                </span>
+                </span> */}
               </div>
             </div>
 
@@ -433,7 +434,7 @@ export default function ProductDetail() {
             <div className="border-t border-white/10 pt-5 space-y-3">
               <div className="flex items-center gap-3 text-xs text-gray-500">
                 <TruckIcon className="h-4 w-4 text-[#C8A96E] flex-shrink-0" />
-                Free delivery on orders above ₹999
+                Free delivery on orders above ₹499
               </div>
               <div className="flex items-center gap-3 text-xs text-gray-500">
                 <ShieldCheckIcon className="h-4 w-4 text-[#C8A96E] flex-shrink-0" />

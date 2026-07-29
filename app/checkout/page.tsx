@@ -333,7 +333,8 @@ function CheckoutContent() {
     }
   };
 
-  const grandTotal = giftProductId ? 0 : total;
+  const shipping = !giftProductId && total > 0 && total < 499 ? 50 : 0;
+  const grandTotal = giftProductId ? 0 : total + shipping;
   const displayItems = giftProductId && giftProduct
     ? [{ name: giftProduct.name, image: giftProduct.images?.[0], quantity: 1, price: 0, isGift: true }]
     : buyNow && buyNowProduct
@@ -562,9 +563,13 @@ function CheckoutContent() {
                     <span>₹{total.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between text-xs text-gray-500">
-                    <span className="tracking-widest uppercase">Shipping</span>
-                    <span className="text-green-500">Free</span>
-                  </div>
+                     <span className="tracking-widest uppercase">Shipping</span>
+                     {shipping > 0 ? (
+                       <span className="text-gray-300">₹{shipping}</span>
+                     ) : (
+                       <span className="text-green-500">Free</span>
+                     )}
+                   </div>
                   <div className="flex justify-between pt-3 border-t border-white/10">
                     <span className="text-[10px] tracking-[0.3em] uppercase text-white">Total</span>
                     <span className="font-serif text-2xl text-[#C8A96E]">₹{grandTotal.toLocaleString('en-IN')}</span>
@@ -582,10 +587,10 @@ function CheckoutContent() {
                   <ShieldCheckIcon className="h-4 w-4 text-[#C8A96E] flex-shrink-0" />
                   {giftProductId ? 'No payment required for gift claims' : '100% secure checkout via Razorpay'}
                 </div>
-                <div className="flex items-center gap-3 text-xs text-gray-500">
-                  <TruckIcon className="h-4 w-4 text-[#C8A96E] flex-shrink-0" />
-                  Free shipping on all orders
-                </div>
+                 <div className="flex items-center gap-3 text-xs text-gray-500">
+                   <TruckIcon className="h-4 w-4 text-[#C8A96E] flex-shrink-0" />
+                   Free shipping on orders above ₹499
+                 </div>
               </div>
             </motion.div>
 

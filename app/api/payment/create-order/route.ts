@@ -92,6 +92,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const shippingCharge = totalAmount > 0 && totalAmount < 499 ? 50 : 0;
+    totalAmount += shippingCharge;
+
     // Create Razorpay order
     const razorpay = getRazorpayClient();
     const razorpayOrder = await razorpay.orders.create({

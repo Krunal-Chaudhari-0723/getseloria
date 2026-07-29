@@ -227,7 +227,7 @@ function CartPageContent() {
   }, 0);
 
   const subtotal = total;
-  const shipping = 0;
+  const shipping = subtotal > 0 && subtotal < 499 ? 50 : 0;
   const grandTotal = subtotal + shipping;
 
   const getDisplayPrice = (item: CartItem) => item.price;
@@ -431,7 +431,11 @@ function CartPageContent() {
                   </div>
                   <div className="flex justify-between text-gray-400 text-sm">
                     <span>Shipping</span>
-                    <span className="text-green-400">Free</span> {/* ✅ Shipping free */}
+                    {shipping > 0 ? (
+                      <span className="text-gray-300">₹{shipping}</span>
+                    ) : (
+                      <span className="text-green-400">Free</span>
+                    )}
                   </div>
                   <div className="border-t border-white/10 pt-3">
                     <div className="flex justify-between">
