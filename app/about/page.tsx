@@ -14,7 +14,7 @@ export default function AboutPage() {
             ✦
           </p>
           <h1 className="text-4xl md:text-5xl font-serif text-white mb-4 tracking-wide">
-            About Seliora
+            About Seloria
           </h1>
           <p className="text-gray-400 text-lg leading-relaxed">
             Where timeless craftsmanship meets modern elegance every piece tells
@@ -38,7 +38,7 @@ export default function AboutPage() {
                 Crafting Beauty Since Day One
               </h2>
               <p className="text-gray-400 leading-relaxed mb-4">
-                Seliora was born from a passion for jewelry that transcends
+                Seloria was born from a passion for jewelry that transcends
                 trends. We believe that the right piece of jewelry doesn&apos;t
                 just accessorize an outfit it becomes a part of who you are.
               </p>
@@ -49,7 +49,7 @@ export default function AboutPage() {
                 beautiful, but built to last a lifetime.
               </p>
               <p className="text-gray-400 leading-relaxed">
-                From bridal jewelry to everyday elegance, Seliora has something
+                From bridal jewelry to everyday elegance, Seloria has something
                 for every moment, every milestone, and every woman.
               </p>
             </div>
@@ -82,7 +82,7 @@ export default function AboutPage() {
               Meet the Founders
             </h2>
             <p className="text-gray-400 mt-3 text-sm max-w-xl mx-auto leading-relaxed">
-              Two visions, one purpose building Seliora into a name synonymous
+              Two visions, one purpose building Seloria into a name synonymous
               with elegance and trust.
             </p>
           </div>
@@ -93,7 +93,7 @@ export default function AboutPage() {
               <div className="relative w-full aspect-[3/4] overflow-hidden bg-[#111111] border border-white/10">
                 <Image
                   src="/neha.jpeg"
-                  alt="Neha Mishra Co-Founder, Seliora"
+                  alt="Neha Mishra Co-Founder, Seloria"
                   fill
                   sizes="(max-width: 640px) 100vw, 50vw"
                   className="object-cover grayscale-[15%] group-hover:grayscale-0 transition-all duration-500"
@@ -127,7 +127,7 @@ export default function AboutPage() {
               <div className="relative w-full aspect-[3/4] overflow-hidden bg-[#111111] border border-white/10">
                 <Image
                   src="/komal.jpeg"
-                  alt="Komal Kashyap Co-Founder, Seliora"
+                  alt="Komal Kashyap Co-Founder, Seloria"
                   fill
                   sizes="(max-width: 640px) 100vw, 50vw"
                   className="object-cover grayscale-[15%] group-hover:grayscale-0 transition-all duration-500"
@@ -195,7 +195,7 @@ export default function AboutPage() {
               ✦
             </p>
             <h2 className="text-2xl font-serif text-gray-800">
-              Why Choose Seliora?
+              Why Choose Seloria?
             </h2>
             <p className="text-gray-500 mt-2 text-sm">
               Our commitment to quality, beauty, and trust
@@ -216,7 +216,7 @@ export default function AboutPage() {
               {
                 icon: "💝",
                 title: "Gifting Made Easy",
-                desc: "Beautiful packaging and gift options make Seliora the perfect choice for every special occasion.",
+                desc: "Beautiful packaging and gift options make Seloria the perfect choice for every special occasion.",
               },
             ].map((v) => (
               <div

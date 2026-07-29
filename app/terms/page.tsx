@@ -35,7 +35,7 @@ export default function TermsPage() {
         <div className="max-w-4xl mx-auto px-4 text-center">
           <p className="text-[#C8A96E] text-[10px] tracking-[0.4em] uppercase mb-4">✦</p>
           <h1 className="text-4xl md:text-5xl font-serif text-white mb-4 tracking-wide">Terms &amp; Conditions</h1>
-          <p className="text-gray-400 text-sm">Please read these terms carefully before using Seliora.</p>
+          <p className="text-gray-400 text-sm">Please read these terms carefully before using Seloria.</p>
         </div>
       </section>
 
@@ -45,7 +45,7 @@ export default function TermsPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-[#111111] border border-white/10 p-4 mb-8">
             <p className="text-gray-400 text-sm">
-              By using Seliora, you agree to these Terms and Conditions. If you do not agree, please do not use our website.
+              By using Seloria, you agree to these Terms and Conditions. If you do not agree, please do not use our website.
             </p>
           </div>
 

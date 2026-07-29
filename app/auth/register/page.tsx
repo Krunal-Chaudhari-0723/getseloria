@@ -144,11 +144,11 @@ export default function RegisterPage() {
         className="max-w-md w-full bg-[#111111] border border-white/10 p-8"
       >
         <div className="text-center mb-8">
-          <Link href="/" className="font-serif text-xl tracking-[0.3em] uppercase text-[#C8A96E]">Seliora</Link>
+          <Link href="/" className="font-serif text-xl tracking-[0.3em] uppercase text-[#C8A96E]">Seloria</Link>
           <div className="mt-6 mb-2">
             <p className="text-[10px] tracking-[0.4em] uppercase text-gray-400">Create Account</p>
           </div>
-          <h2 className="text-white text-lg font-light">Join the Seliora family</h2>
+          <h2 className="text-white text-lg font-light">Join the Seloria family</h2>
         </div>
 
         {error && (

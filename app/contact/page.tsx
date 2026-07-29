@@ -21,6 +21,7 @@ export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetch('/api/settings')
@@ -28,11 +29,46 @@ export default function ContactPage() {
       .then(data => setContact(data.contact || {}));
   }, []);
 
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+
+    if (!form.name.trim()) {
+      errors.name = 'Name is required';
+    } else if (form.name.trim().length < 3) {
+      errors.name = 'Name must be at least 3 characters long';
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!form.email.trim()) {
+      errors.email = 'Email address is required';
+    } else if (!emailRegex.test(form.email.trim())) {
+      errors.email = 'Please enter a valid email address';
+    }
+
+    if (!form.subject.trim()) {
+      errors.subject = 'Subject is required';
+    }
+
+    if (!form.message.trim()) {
+      errors.message = 'Message is required';
+    } else if (form.message.trim().length < 10) {
+      errors.message = 'Message must be at least 10 characters long';
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSending(true);
+    setFieldErrors({});
     setError(null);
 
+    if (!validateForm()) {
+      return;
+    }
+
+    setSending(true);
     try {
       const res = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
@@ -140,13 +176,15 @@ export default function ContactPage() {
                     <div className="flex gap-3 pt-2">
                       {contact.instagramUrl && (
                         <a href={contact.instagramUrl} target="_blank" rel="noopener noreferrer"
-                          className="border border-white/20 text-white hover:bg-white/5 text-[10px] tracking-[0.3em] uppercase px-6 py-2.5 transition-colors">
+                          className="flex items-center gap-2 border border-white/20 text-white hover:bg-white/5 text-[10px] tracking-[0.3em] uppercase px-5 py-2.5 transition-colors">
+                          <svg className="h-3.5 w-3.5 fill-current text-white" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
                           Instagram
                         </a>
                       )}
                       {contact.facebookUrl && (
                         <a href={contact.facebookUrl} target="_blank" rel="noopener noreferrer"
-                          className="border border-white/20 text-white hover:bg-white/5 text-[10px] tracking-[0.3em] uppercase px-6 py-2.5 transition-colors">
+                          className="flex items-center gap-2 border border-white/20 text-white hover:bg-white/5 text-[10px] tracking-[0.3em] uppercase px-5 py-2.5 transition-colors">
+                          <svg className="h-3.5 w-3.5 fill-current text-white" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
                           Facebook
                         </a>
                       )}
@@ -169,43 +207,63 @@ export default function ContactPage() {
                   <div className="text-5xl mb-4">✅</div>
                   <h3 className="text-lg font-semibold text-green-400 mb-2">Message Sent!</h3>
                   <p className="text-green-400/70 text-sm">Thank you for reaching out. We&apos;ll get back to you within 24 hours.</p>
-                  <button onClick={() => { setSubmitted(false); setForm({ name: '', email: '', subject: '', message: '' }); }}
+                  <button onClick={() => { setSubmitted(false); setForm({ name: '', email: '', subject: '', message: '' }); setFieldErrors({}); }}
                     className="mt-6 bg-[#7B2D42] text-white hover:bg-[#8A3048] transition-colors text-[10px] tracking-[0.3em] uppercase px-6 py-2.5">
                     Send Another
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4" noValidate>
                     {error && (
                       <div className="bg-red-900/30 border border-red-500/20 text-red-400 p-3 text-xs">
                         {error}
                       </div>
                     )}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 mb-2">Name *</label>
-                        <input required type="text" name="name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                        className="bg-[#1a1a1a] border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#C8A96E] px-4 py-2.5 text-sm w-full" />
+                      <input type="text" name="name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                        className={`bg-[#1a1a1a] border text-white placeholder-gray-600 focus:outline-none px-4 py-2.5 text-sm w-full ${
+                          fieldErrors.name ? 'border-red-500 focus:border-red-500' : 'border-white/10 focus:border-[#C8A96E]'
+                        }`} />
+                      {fieldErrors.name && (
+                        <p className="text-red-400 text-[11px] mt-1 tracking-wide">{fieldErrors.name}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 mb-2">Email *</label>
-                        <input required type="email" name="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                        className="bg-[#1a1a1a] border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#C8A96E] px-4 py-2.5 text-sm w-full" />
+                      <input type="email" name="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                        className={`bg-[#1a1a1a] border text-white placeholder-gray-600 focus:outline-none px-4 py-2.5 text-sm w-full ${
+                          fieldErrors.email ? 'border-red-500 focus:border-red-500' : 'border-white/10 focus:border-[#C8A96E]'
+                        }`} />
+                      {fieldErrors.email && (
+                        <p className="text-red-400 text-[11px] mt-1 tracking-wide">{fieldErrors.email}</p>
+                      )}
                     </div>
                   </div>
                   <div>
                     <label className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 mb-2">Subject *</label>
-                      <input required type="text" name="subject" value={form.subject} onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
-                      className="bg-[#1a1a1a] border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#C8A96E] px-4 py-2.5 text-sm w-full" />
+                    <input type="text" name="subject" value={form.subject} onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
+                      className={`bg-[#1a1a1a] border text-white placeholder-gray-600 focus:outline-none px-4 py-2.5 text-sm w-full ${
+                        fieldErrors.subject ? 'border-red-500 focus:border-red-500' : 'border-white/10 focus:border-[#C8A96E]'
+                      }`} />
+                    {fieldErrors.subject && (
+                      <p className="text-red-400 text-[11px] mt-1 tracking-wide">{fieldErrors.subject}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 mb-2">Message *</label>
-                      <textarea required rows={5} name="message" value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
-                      className="bg-[#1a1a1a] border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#C8A96E] px-4 py-2.5 text-sm w-full resize-none" />
+                    <textarea rows={5} name="message" value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+                      className={`bg-[#1a1a1a] border text-white placeholder-gray-600 focus:outline-none px-4 py-2.5 text-sm w-full resize-none ${
+                        fieldErrors.message ? 'border-red-500 focus:border-red-500' : 'border-white/10 focus:border-[#C8A96E]'
+                      }`} />
+                    {fieldErrors.message && (
+                      <p className="text-red-400 text-[11px] mt-1 tracking-wide">{fieldErrors.message}</p>
+                    )}
                   </div>
-                    <button type="submit" disabled={sending}
-                      className="w-full py-2.5 bg-[#7B2D42] text-white hover:bg-[#8A3048] transition-colors text-[10px] tracking-[0.3em] uppercase disabled:opacity-50">
-                      {sending ? 'Sending...' : 'Send Message'}
+                  <button type="submit" disabled={sending}
+                    className="w-full py-2.5 bg-[#7B2D42] text-white hover:bg-[#8A3048] transition-colors text-[10px] tracking-[0.3em] uppercase disabled:opacity-50">
+                    {sending ? 'Sending...' : 'Send Message'}
                   </button>
                 </form>
               )}

@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       order_id 
     } = await req.json();
 
-    const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
+    const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET?.trim();
     if (!razorpayKeySecret) {
       return NextResponse.json(
         { error: 'Razorpay is not configured. Set RAZORPAY_KEY_SECRET.' },

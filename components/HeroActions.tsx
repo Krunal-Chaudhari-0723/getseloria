@@ -28,7 +28,7 @@ export default function HeroActions() {
           Join Now
         </Link>
       )}
-      <Link href="/profile"
+      <Link href="/loyalty"
         className="flex items-center gap-2 text-white text-[10px] tracking-[0.3em] uppercase hover:text-[#C8A96E] transition-colors">
         Explore Benefits <ArrowRightIcon className="h-3.5 w-3.5" />
       </Link>

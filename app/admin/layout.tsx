@@ -13,6 +13,7 @@ import {
   CogIcon,
   Bars3Icon,
   XMarkIcon,
+  ArrowLeftOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -162,10 +163,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="px-3 py-5 border-t border-white/10">
           <button
             onClick={handleLogout}
-            className="flex items-center w-full px-3 py-2.5 text-gray-600 hover:text-[#7B2D42] hover:bg-white/5 transition-colors group"
+            className="flex items-center w-full px-3 py-2.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors group border-l-2 border-transparent hover:border-red-500"
           >
-            <XMarkIcon className="h-4 w-4 mr-3 group-hover:text-[#7B2D42]" />
-            <span className="text-[10px] tracking-[0.25em] uppercase">Logout</span>
+            <ArrowLeftOnRectangleIcon className="h-4 w-4 mr-3 text-gray-400 group-hover:text-red-400" />
+            <span className="text-[10px] tracking-[0.25em] uppercase font-medium">Logout</span>
           </button>
         </div>
       </aside>

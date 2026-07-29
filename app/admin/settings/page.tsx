@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { UserCircleIcon, LockClosedIcon, PhoneIcon, DocumentTextIcon, TagIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import RichTextEditor from '@/components/RichTextEditor';
 
-const defaultTerms = `<h2><strong>1. Acceptance of Terms</strong></h2><p>By accessing and using the Seliora website, you accept and agree to be bound by these Terms and Conditions.</p>2. Products and Pricing</h2><p>All products listed on Seliora are subject to availability. Prices are listed in Indian Rupees (INR) and are inclusive of applicable taxes unless stated otherwise.</p>3. Orders and Payments</h2><p>Payment must be made in full at the time of order. We use Razorpay for secure payment processing.</p>4. Shipping and Delivery</h2><p>We aim to dispatch orders within 2–5 business days. We are not responsible for delays caused by courier services.</p>5. Returns and Refunds</h2><p>If you receive a damaged or defective item, please contact us within 48 hours of delivery. Refunds will be credited within 7–10 business days.</p>6. Privacy Policy</h2><p>We collect personal information only as necessary to process your orders. We do not sell your personal information to third parties.</p>7. Changes to Terms</h2><p>We reserve the right to update these Terms and Conditions at any time. Continued use of the website constitutes acceptance of the revised terms.</p>`;
+const defaultTerms = `<h2><strong>1. Acceptance of Terms</strong></h2><p>By accessing and using the Seloria website, you accept and agree to be bound by these Terms and Conditions.</p>2. Products and Pricing</h2><p>All products listed on Seloria are subject to availability. Prices are listed in Indian Rupees (INR) and are inclusive of applicable taxes unless stated otherwise.</p>3. Orders and Payments</h2><p>Payment must be made in full at the time of order. We use Razorpay for secure payment processing.</p>4. Shipping and Delivery</h2><p>We aim to dispatch orders within 2–5 business days. We are not responsible for delays caused by courier services.</p>5. Returns and Refunds</h2><p>If you receive a damaged or defective item, please contact us within 48 hours of delivery. Refunds will be credited within 7–10 business days.</p>6. Privacy Policy</h2><p>We collect personal information only as necessary to process your orders. We do not sell your personal information to third parties.</p>7. Changes to Terms</h2><p>We reserve the right to update these Terms and Conditions at any time. Continued use of the website constitutes acceptance of the revised terms.</p>`;
 
 export default function AdminSettingsPage() {
   const [profile, setProfile] = useState({ name: '', email: '' });
@@ -236,7 +236,7 @@ export default function AdminSettingsPage() {
           <div>
             <label className="block text-[10px] tracking-[0.3em] uppercase text-gray-400 mb-2">Email</label>
             <input type="email" value={contact.email} onChange={e => setContact(c => ({ ...c, email: e.target.value }))}
-              placeholder="support@seliora.com"
+              placeholder="support@seloria.com"
               className={inputClass} />
           </div>
         </div>

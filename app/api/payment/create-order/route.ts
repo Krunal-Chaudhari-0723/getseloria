@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       orderId: order._id,
       razorpayOrderId: razorpayOrder.id,
-      razorpayKeyId: process.env.RAZORPAY_KEY_ID,
+      razorpayKeyId: process.env.RAZORPAY_KEY_ID?.trim(),
       amount: totalAmount,
       currency: 'INR'
     });
