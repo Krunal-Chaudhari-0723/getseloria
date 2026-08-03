@@ -46,7 +46,7 @@ export default function WhatsAppButton() {
   }
 
   const whatsappUrl = `https://wa.me/${sanitizedNumber}?text=${encodeURIComponent(
-    'Hello! I have a question about Seloria jewelry.'
+    'Hello! I have a question about Seloria Products'
   )}`;
 
   return (
