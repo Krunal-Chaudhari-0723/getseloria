@@ -92,7 +92,7 @@ export default function AboutPage() {
             <div className="group text-center">
               <div className="relative w-full aspect-[3/4] overflow-hidden bg-[#111111] border border-white/10">
                 <Image
-                  src="/neha.jpeg"
+                  src="/Neha.jpeg"
                   alt="Neha Mishra Co-Founder, Seloria"
                   fill
                   sizes="(max-width: 640px) 100vw, 50vw"
@@ -126,7 +126,7 @@ export default function AboutPage() {
             <div className="group text-center">
               <div className="relative w-full aspect-[3/4] overflow-hidden bg-[#111111] border border-white/10">
                 <Image
-                  src="/komal.jpeg"
+                  src="/Komal.jpeg"
                   alt="Komal Kashyap Co-Founder, Seloria"
                   fill
                   sizes="(max-width: 640px) 100vw, 50vw"
