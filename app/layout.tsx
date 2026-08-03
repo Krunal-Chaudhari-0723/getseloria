@@ -24,10 +24,10 @@ export const metadata: Metadata = {
   description: 'Discover timeless elegance with Seloria handcrafted jewelry.',
   icons: {
     icon: [
-      { url: '/logo.jpeg', type: 'image/jpeg' },
+      { url: '/favicon.jpeg', type: 'image/jpeg' },
     ],
-    shortcut: '/logo.jpeg',
-    apple: '/logo.jpeg',
+    shortcut: '/favicon.jpeg',
+    apple: '/favicon.jpeg',
   },
 };
 
