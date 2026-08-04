@@ -31,7 +31,8 @@ export async function POST(req: NextRequest) {
 
       try {
         const origin = req.nextUrl.origin;
-        await sendPasswordResetEmail(user.email, otpCode, `${origin}/auth/reset-password?token=${otpCode}`);
+        const resetUrl = `${origin}/auth/reset-password?token=${otpCode}&email=${encodeURIComponent(user.email)}`;
+        await sendPasswordResetEmail(user.email, otpCode, resetUrl);
       } catch (emailError) {
         await PasswordResetToken.deleteOne({ _id: resetTokenRecord._id });
         throw emailError;

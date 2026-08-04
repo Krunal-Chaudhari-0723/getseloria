@@ -9,12 +9,14 @@ import { LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outli
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
+  const emailFromUrl = searchParams.get('email') || '';
   const [code, setCode] = useState(token);
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState(token ? '' : 'Enter the reset code from your email.');
 
@@ -55,6 +57,37 @@ function ResetPasswordForm() {
       setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    if (!emailFromUrl) {
+      setError('Enter your email on the previous step to resend the reset code.');
+      return;
+    }
+
+    setResending(true);
+    setMessage('');
+    setError('');
+
+    try {
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailFromUrl }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Unable to resend the reset code.');
+        return;
+      }
+
+      setMessage(data.message);
+    } catch {
+      setError('An error occurred while resending the reset code.');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -149,8 +182,18 @@ function ResetPasswordForm() {
           </form>
         )}
 
-        <div className="mt-6 text-center border-t border-white/10 pt-6">
-          <Link href="/auth/login" className="text-sm text-[#C8A96E] hover:text-white transition-colors">Back to Sign In</Link>
+        <div className="mt-6 text-center border-t border-white/10 pt-6 space-y-3">
+          <button
+            type="button"
+            onClick={handleResendCode}
+            disabled={resending}
+            className="text-sm text-[#C8A96E] hover:text-white transition-colors disabled:opacity-50"
+          >
+            {resending ? 'Resending...' : 'Resend reset code'}
+          </button>
+          <div>
+            <Link href="/auth/login" className="text-sm text-[#C8A96E] hover:text-white transition-colors">Back to Sign In</Link>
+          </div>
         </div>
       </motion.div>
     </div>
